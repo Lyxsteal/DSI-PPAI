@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Inspecciones</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 10px 15px; margin-bottom: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        input[type="number"] { padding: 8px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px;}
+        .container { margin-bottom: 30px; padding: 20px; border: 1px solid #eee; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        ul { list-style-type: square; }
+    </style>
+</head>
+<body>
+
+    <h1>ORDENES DE INSPECCION</h1>
+
+    <div class="container">
+        <h2>Todas las Órdenes de Inspección</h2>
+        <button id="botonCargarTodasOrdenes">Cargar Todas las Órdenes</button>
+        <table id="tablaTodasOrdenes">
+            <thead>
+                <tr>
+                    <th>Número de Orden</th>
+                    <th>Fecha Finalización</th>
+                    <th>Nombre Estación</th>
+                    <th>ID Sismógrafo</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyOrdenes">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>Filtrar Órdenes por ID de Estado</h2>
+        <label for="entradaIdEstado">ID de Estado:</label>
+        <input type="number" id="entradaIdEstado" placeholder="Ej: 3">
+        <button id="botonFiltrarOrdenes">Mostrar Órdenes por Estado</button>
+        <table id="tablaOrdenesFiltradas">
+            <thead>
+                <tr>
+                    <th>Número de Orden</th>
+                    <th>Fecha Finalización</th>
+                    <th>ID Sismógrafo</th>
+                    <th>Nombre Estación</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>Tipos de Motivo</h2>
+        <button id="botonCargarMotivos">Cargar Tipos de Motivo</button>
+        <ul id="listaMotivos">
+            </ul>
+    </div>
+
+    <script>
+        // El código JavaScript que te proporcioné anteriormente iría aquí
+        // o en un archivo script.js separado y enlazado arriba.
+        // Por ejemplo:
+        document.addEventListener('DOMContentLoaded', () => {
+            const botonCargarTodasOrdenes = document.getElementById('botonCargarTodasOrdenes');
+            const cuerpoTablaTodasOrdenes = document.getElementById('tablaTodasOrdenes').getElementsByTagName('tbody')[0];
+
+            const botonFiltrarOrdenes = document.getElementById('botonFiltrarOrdenes');
+            const entradaIdEstado = document.getElementById('entradaIdEstado');
+            const cuerpoTablaOrdenesFiltradas = document.getElementById('tablaOrdenesFiltradas').getElementsByTagName('tbody')[0];
+            
+            const botonCargarMotivos = document.getElementById('botonCargarMotivos');
+            const listaMotivos = document.getElementById('listaMotivos');
+
+            // Función para mostrar órdenes en una tabla (versión general)
+            function mostrarOrdenesEnTabla(ordenes, cuerpoTabla) {
+                cuerpoTabla.innerHTML = ''; // Limpiar resultados anteriores
+                if (!ordenes || ordenes.length === 0) {
+                    let fila = cuerpoTabla.insertRow();
+                    let celda = fila.insertCell();
+                    celda.colSpan = 5; // Ajusta al número de columnas
+                    celda.textContent = 'No hay órdenes para mostrar.';
+                    return;
+                }
+                ordenes.forEach(orden => {
+                    let fila = cuerpoTabla.insertRow();
+                    fila.insertCell().textContent = orden.numeroOrden || 'N/A';
+                    fila.insertCell().textContent = orden.fechaHoraFinalizacion || 'N/A';
+                    fila.insertCell().textContent = orden.nombreEstacion || 'N/A';
+                    fila.insertCell().textContent = orden.identificadorSismografo || 'N/A';
+                    fila.insertCell().textContent = orden.nombreEstado || 'N/A';
+                });
+            }
+            
+            // Función para mostrar órdenes filtradas
+            function mostrarOrdenesFiltradasEnTabla(ordenes, cuerpoTabla) {
+                cuerpoTabla.innerHTML = ''; // Limpiar resultados anteriores
+                 if (!ordenes || ordenes.length === 0) {
+                    let fila = cuerpoTabla.insertRow();
+                    let celda = fila.insertCell();
+                    celda.colSpan = 4; // Ajusta al número de columnas
+                    celda.textContent = 'No hay órdenes para este estado o con fecha de finalización.';
+                    return;
+                }
+                ordenes.forEach(orden => {
+                    let fila = cuerpoTabla.insertRow();
+                    fila.insertCell().textContent = orden.numeroOrden || 'N/A';
+                    fila.insertCell().textContent = orden.fechaHoraFinalizacion || 'N/A';
+                    fila.insertCell().textContent = orden.identificadorSismografo || 'N/A';
+                    fila.insertCell().textContent = orden.nombreEstacion || 'N/A';
+                });
+            }
+
+            // Cargar todas las órdenes
+            if (botonCargarTodasOrdenes) {
+                botonCargarTodasOrdenes.addEventListener('click', () => {
+                    fetch('/api/ordenes')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(datos => {
+                            mostrarOrdenesEnTabla(datos, cuerpoTablaTodasOrdenes);
+                        })
+                        .catch(error => {
+                            console.error('Error al obtener todas las órdenes:', error);
+                            cuerpoTablaTodasOrdenes.innerHTML = `<tr><td colspan="5">Error al cargar datos: ${error.message}</td></tr>`;
+                        });
+                });
+            }
+
+            // Filtrar órdenes por ID de estado
+            if (botonFiltrarOrdenes) {
+                botonFiltrarOrdenes.addEventListener('click', () => {
+                    const idEstado = entradaIdEstado.value;
+                    if (!idEstado) {
+                        alert('Por favor, ingrese un ID de Estado.');
+                        return;
+                    }
+                    fetch(`/api/ordenes/realizadas/${idEstado}`)
+                        .then(response => {
+                             if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(datos => {
+                            mostrarOrdenesFiltradasEnTabla(datos, cuerpoTablaOrdenesFiltradas);
+                        })
+                        .catch(error => {
+                            console.error('Error al obtener órdenes filtradas:', error);
+                            cuerpoTablaOrdenesFiltradas.innerHTML = `<tr><td colspan="4">Error al cargar datos: ${error.message}</td></tr>`;
+                        });
+                });
+            }
+            
+            // Cargar Motivos
+            if (botonCargarMotivos) {
+                botonCargarMotivos.addEventListener('click', () => {
+                    fetch('/api/motivos')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(datos => {
+                            listaMotivos.innerHTML = ''; 
+                            if (!datos || datos.length === 0) {
+                                const elementoLista = document.createElement('li');
+                                elementoLista.textContent = 'No hay motivos para mostrar.';
+                                listaMotivos.appendChild(elementoLista);
+                                return;
+                            }
+                            datos.forEach(motivoDesc => {
+                                const elementoLista = document.createElement('li');
+                                elementoLista.textContent = motivoDesc;
+                                listaMotivos.appendChild(elementoLista);
+                            });
+                        })
+                        .catch(error => {
+                             console.error('Error al obtener motivos:', error);
+                             listaMotivos.innerHTML = `<li>Error al cargar datos: ${error.message}</li>`;
+                        });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
