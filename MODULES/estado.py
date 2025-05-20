@@ -4,8 +4,8 @@ class Estado:
         self.__nombre = nombre
         self.__ambito = ambito
 
-    def sosCompletamenteRealizada(self, id_buscada):
-        if self.__idEstado == id_buscada:
+    def sosCompletamenteRealizada(self):
+        if self.__idEstado == 1:
             return True
         else:
             return False
@@ -35,5 +35,3 @@ class Estado:
             return True
         else:
             return False
-    def cerrar(self):
-        

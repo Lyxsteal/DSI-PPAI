@@ -6,7 +6,7 @@ class OrdenInspeccion:
         fechaHoraCierre=None,
         fechaHoraFinalizacion=None,
         observacionCierre=None,
-        idEmpleado=None,
+        empleado=None,
         estado=None,
         estacion=None,
         
@@ -16,12 +16,12 @@ class OrdenInspeccion:
         self.__fechaHoraCierre       = fechaHoraCierre
         self.__fechaHoraFinalizacion = fechaHoraFinalizacion
         self.__observacionCierre     = observacionCierre
-        self.__idEmpleado            = idEmpleado
+        self.__empleado              = empleado
         self.__estado                = estado
         self.__estacionSismo         = estacion
 
-    def sosCompletamenteRealizada(self, id_buscada):
-        return self.__estado.sosCompletamenteRealizada(id_buscada)
+    def sosCompletamenteRealizada(self):
+        return self.__estado.sosCompletamenteRealizada()
 
     def getNroOrden(self):
         return self.__numeroOrden
@@ -36,3 +36,7 @@ class OrdenInspeccion:
     
     def getNombreEstacion(self):
         return self.__estacionSismo.getNombreEstacion()
+    
+    def sosDeEmpleado(self, empleado):
+        if self.__empleado == empleado:
+            return True

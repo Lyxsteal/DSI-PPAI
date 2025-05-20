@@ -1,11 +1,12 @@
 import sqlite3
-import asyncio
+import tkinter
 from MODULES.estado import Estado
 from MODULES.ordenInspeccion import OrdenInspeccion
 from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
 from MODULES.motivosTipo import MotivoTipo
 from datetime import datetime
+from MODULES.gestor import GestorOrdenDeInspeccion
 
 def obtener_orden_desde_db():
     conn = sqlite3.connect('MODULES/database.db')
@@ -17,37 +18,40 @@ def obtener_orden_desde_db():
         JOIN Estados e ON o.idEstado = e.idEstado
         JOIN EstacionesSismologicas es ON o.codigoES = es.codigo
         JOIN Sismografos sis ON o.codigoES = sis.codigoEstacion
-    ''')
+        JOIN Empleados emp ON o.nombreEmpleado = emp.nombre    
+                   ''')
     filas = cursor.fetchall()
     conn.close()
     return filas
-"""     for orden in fila:
-        numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, idEmpleado, idEstado, nombreEstado = orden
-        estado = Estado(idEstado, nombreEstado)
-        ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, idEmpleado, estado)
-        ordenes.append(ordenInspeccion)"""
+    
+def obtenerUsuario():
+    conn = sqlite3.connect('MODULES/database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT nombre, contraseña
+        FROM Usuario
+    ''')
+    usuarios = cursor.fetchall()
+    conn.close()
+    return usuarios
 
 fila = obtener_orden_desde_db()
 def obtenerOrdenesRealizadas(fila):
     ordenesFiltro = []
-    id_buscada = int(input('La id que busca es: '))
-
     for orden in fila:
-        numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, idEmpleado, idEstado, codigoES, nombreEstado, nombre, identificadorSismografo = orden
+        numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, nombreEmpleado, idEstado, codigoES, nombreEstado, nombre, identificadorSismografo = orden
         estado = Estado(idEstado, nombreEstado)
         sismografo = Sismografo(codigoES, identificadorSismografo)  
         estacion = EstacionSismologica(codigoES, nombre, sismografo_obj=sismografo)
-        ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, idEmpleado, estado, estacion)   
-        if ordenInspeccion.sosCompletamenteRealizada(id_buscada) == True:
+        ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, nombreEmpleado, estado, estacion)
+        if ordenInspeccion.sosCompletamenteRealizada() == True and ordenInspeccion.sosDeEmpleado() == True:
             ordenesFiltro.append(ordenInspeccion)
-            
     ordenesOrdenadas = sorted(ordenesFiltro, key=lambda o: datetime.strptime(o.getfechaHoraFinalizacion(), "%Y-%m-%d %H:%M:%S"))
     print("Órdenes ordenadas por Fecha de Finalización:")
     for orden in ordenesOrdenadas:
         print(orden.getNroOrden(), orden.getfechaHoraFinalizacion(), orden.getIdentificadorSismografo(), orden.getNombreEstacion())
 
     return ordenesOrdenadas, fila
-obtenerOrdenesRealizadas(fila)
 def obtenerMotivosTipo():
     conn = sqlite3.connect('MODULES/database.db')
     cursor = conn.cursor()
@@ -56,7 +60,6 @@ def obtenerMotivosTipo():
     filas = cursor.fetchall()
     conn.close()
     return filas
-motivos = obtenerMotivosTipo()
 def buscarMotivosTipoFueraServicio(motivos):
     motivosTipo = []
     for motivo in motivos:
@@ -67,7 +70,6 @@ def buscarMotivosTipoFueraServicio(motivos):
     for motivo in motivosTipo:
         print('Motivo: ', motivo.getDescripcion())
     return motivosTipo
-buscarMotivosTipoFueraServicio(motivos)
 
 #debe comprobar que sea ambito "OrdenInspeccion" y estado "cerrada"
 def obtenerEstado():
@@ -81,7 +83,6 @@ def obtenerEstado():
     filas = cursor.fetchall()
     conn.close()
     return filas
-estados = obtenerEstado()
 def buscarEstadoFueraSismo(estados):
     estadosSismo = []
     for fila in estados:
@@ -105,9 +106,6 @@ def buscarEstadoCerradaOrden(estados):
             if estado.sosCerrada() == True:
                 print('Existe')        
     return estado
-buscarEstadoCerradaOrden(estados)
-buscarEstadoFueraSismo(estados)
-
 def getOrdenInspeccion():
     conn = sqlite3.connect('MODULES/database.db')
     cursor = conn.cursor()
@@ -124,6 +122,3 @@ def cerrarOrdenInspeccion(filas):
         estado = Estado(idEstado)
         estacion = EstacionSismologica(codigoES)
         ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, idEmpleado, estado, estacion)
-        if ordenInspeccion.getIdEstado() == 1:
-
-    return ordenInspeccion
