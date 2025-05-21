@@ -6,7 +6,7 @@ from MODULES.ordenInspeccion import OrdenInspeccion
 from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
 from MODULES.motivosTipo import MotivoTipo
-from MODULES.Usuario import Usuario
+from MODULES.usuario import Usuario
 from MODULES.empleado import Empleado
 
 class GestorOrdenDeInspeccion:

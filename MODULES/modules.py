@@ -6,7 +6,7 @@ from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
 from MODULES.motivosTipo import MotivoTipo
 from datetime import datetime
-from MODULES.gestor import GestorOrdenDeInspeccion
+from CONTROL.gestor import GestorOrdenDeInspeccion
 
 def obtener_orden_desde_db():
     conn = sqlite3.connect('MODULES/database.db')

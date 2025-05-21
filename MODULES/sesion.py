@@ -1,5 +1,5 @@
 from datetime import datetime
-from MODULES.Usuario import Usuario
+from MODULES.usuario import Usuario
 class Sesion:
     def __init__(self, fechaInicio, fechaFin=None, usuario:Usuario=None):
         self.fechaInicio = datetime.now()

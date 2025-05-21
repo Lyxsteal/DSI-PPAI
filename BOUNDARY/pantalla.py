@@ -2,6 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 
 from CONTROL.gestor import GestorOrdenDeInspeccion
+from BOUNDARY.pantallaOpciones import PantallaOpciones
+from MODULES.usuario import Usuario
+from MODULES.sesion import Sesion
+
 class Pantalla():
     def __init__(self):
         self.nombre_usuario = None
@@ -10,26 +14,30 @@ class Pantalla():
         self.insertar_contraseña = None
         self.sesion = None
         self.ventanaSesion = None
+        self.pantallaOI = None
+        self.gestor = None
 
-    #Funcion para obtener los datos de la ventana cuando apretas el boton    
+
+    #Funcion para obtener los datos de la ventana cuando apretas el boton   
     def obtener_datos(self):
-        nombre_usuario = self.insertar_usuario.get()
-        contraseña_iniciada = self.insertar_contraseña.get()
+        #nombre_usuario = self.insertar_usuario.get()
+        #contraseña_iniciada = self.insertar_contraseña.get()
+        nombre_usuario = 'jperez'
+        contraseña_iniciada = 'Clave123#'
         print("Nombre de usuario:", nombre_usuario)
         print("Contraseña:", contraseña_iniciada)
-        gestor = GestorOrdenDeInspeccion()
-        sesion, mensaje = gestor.iniciarSesion(nombre_usuario, contraseña_iniciada)
+        sesionGestor = Sesion(Usuario(nombre_usuario, contraseña_iniciada))
+        self.gestor = GestorOrdenDeInspeccion(sesionGestor)
+        sesion, mensaje = self.gestor.iniciarSesion(nombre_usuario, contraseña_iniciada)
         print(mensaje)
         if sesion:
+            pantallaOP = PantallaOpciones(gestor=self.gestor)
             self.sesion = sesion  # guardar la sesión si querés usarla después
             self.ventanaSesion.destroy()
-            self.habilitar_segunda_pantalla()
+            pantallaOP.habilitar_pantalla_intermedia()  # Cambia esto
         else:
             self.ventanaSesion.destroy()
 
-    #Funcion para habilitar la primera pantalla (inicio de sesion)        
-    def seleccionOpcionIniciarSesion(self):
-        self.habilitar_primera_pantalla()
 
     #Funcion GUI Pantalla inicio de sesion           
     def habilitar_primera_pantalla(self):
@@ -90,68 +98,6 @@ class Pantalla():
 
         self.ventanaSesion.mainloop()
 
-
-
-    #Funcion GUI Pantalla de ordenes de inspeccion
-    def habilitar_segunda_pantalla(self):
-        self.ventanaOrdenes = tk.Tk()
-        self.ventanaOrdenes.title()
-        self.ventanaOrdenes.geometry("600x550")
-        alto_ventana = 550
-        y_centro = alto_ventana // 2
-
-        etiqueta = tk.Label(self.ventanaOrdenes, text="", fg='#4bc5eb')
-        etiqueta.config(font=("Cascadia Code", 20, "bold"))
-        etiqueta.pack()
-        etiqueta1 = tk.Label(self.ventanaOrdenes, text="Nombre de usuario:")
-        etiqueta1.config(font=("Cascadia Code", 8, "bold"))
-        etiqueta1.place(relx=0.5, y=y_centro - 200, anchor=tk.CENTER)
-
-        # Tarjeta
-        frame = tk.Frame(self.ventanaOrdenes, bg="#2a2a3b")
-        frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width=440, height=500)
-
-        # Título
-        titulo = tk.Label(frame, text="Cierre de Orden", bg="#2a2a3b", fg="white", font=("Segoe UI", 16, "bold"))
-        titulo.pack(pady=10)
-
-        # Ordenes realizadas (simulado)
-        tk.Label(frame, text="Seleccione una orden:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w")
-        ordenes_combo = ttk.Combobox(frame, values=["Orden #101", "Orden #102", "Orden #103"])
-        ordenes_combo.pack(padx=20, fill="x", pady=5)
-
-        # Observación
-        tk.Label(frame, text="Observación de cierre:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
-        observacion_entry = tk.Entry(frame, font=("Segoe UI", 10))
-        observacion_entry.pack(padx=20, fill="x", pady=5)
-
-        # Motivos
-        tk.Label(frame, text="Motivos Fuera de Servicio:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
-        motivos_listbox = tk.Listbox(frame, selectmode=tk.MULTIPLE, height=4, exportselection=False)
-        for motivo in ["Falla técnica", "Equipo no disponible"]:
-            motivos_listbox.insert(tk.END, motivo)
-        motivos_listbox.pack(padx=20, fill="x", pady=5)
-
-        # Comentario por motivo
-        tk.Label(frame, text="Comentario general:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
-        comentario_entry = tk.Entry(frame, font=("Segoe UI", 10))
-        comentario_entry.pack(padx=20, fill="x", pady=5)
-
-        # Botón Confirmar
-        def confirmar_cierre():
-            orden = ordenes_combo.get()
-            observacion = observacion_entry.get()
-            motivos = [motivos_listbox.get(i) for i in motivos_listbox.curselection()]
-            comentario = comentario_entry.get()
-            print("Orden:", orden)
-            print("Observación:", observacion)
-            print("Motivos seleccionados:", motivos)
-            print("Comentario:", comentario)
-
-        tk.Button(
-            frame, text="Confirmar Cierre", command=confirmar_cierre,
-            bg="#29d884", fg="white", font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2"
-        ).pack(pady=20, ipadx=10, ipady=5)
-
-        self.ventanaOrdenes.mainloop()
-
+    def seleccionOpcionIniciarSesion(self):
+        self.habilitar_primera_pantalla()
+    

@@ -1,6 +1,6 @@
 from MODULES.empleado import Empleado
 class Usuario:
-    def __init__(self, nombre, contraseña, empleado:Empleado):
+    def __init__(self, nombre, contraseña, empleado:Empleado = None):
         self.nombre = nombre
         self.contraseña = contraseña
         self.__empleado = empleado
