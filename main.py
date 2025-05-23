@@ -1,5 +1,4 @@
-from BOUNDARY.pantalla import Pantalla
-from CONTROL.gestor import GestorOrdenDeInspeccion
+from BOUNDARY.pantallaIS import Pantalla
 def main():
     pantalla = Pantalla()
     pantalla.seleccionOpcionIniciarSesion()

@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import tkinter
 from MODULES.estado import Estado
@@ -6,12 +7,13 @@ from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
 from MODULES.motivosTipo import MotivoTipo
 from datetime import datetime
-from CONTROL.gestor import GestorOrdenDeInspeccion
+from CONTROL.gestorOrdenes import GestorOrdenDeInspeccion
 
 def obtener_orden_desde_db():
-    conn = sqlite3.connect('MODULES/database.db')
+    db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    # Consultar orden con join a estado
+    # Consultar orden with join to estado
     cursor.execute('''
         SELECT o.*, e.nombreEstado, es.nombre, sis.identificadorSismografo
         FROM OrdenesInspeccion o
@@ -25,7 +27,8 @@ def obtener_orden_desde_db():
     return filas
     
 def obtenerUsuario():
-    conn = sqlite3.connect('MODULES/database.db')
+    db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
         SELECT nombre, contraseña
@@ -44,7 +47,7 @@ def obtenerOrdenesRealizadas(fila):
         sismografo = Sismografo(codigoES, identificadorSismografo)  
         estacion = EstacionSismologica(codigoES, nombre, sismografo_obj=sismografo)
         ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, nombreEmpleado, estado, estacion)
-        if ordenInspeccion.sosCompletamenteRealizada() == True and ordenInspeccion.sosDeEmpleado() == True:
+        if ordenInspeccion.sosCompletamenteRealizada() == True and ordenInspeccion.sosDeEmpleado(nombreEmpleado) == True:
             ordenesFiltro.append(ordenInspeccion)
     ordenesOrdenadas = sorted(ordenesFiltro, key=lambda o: datetime.strptime(o.getfechaHoraFinalizacion(), "%Y-%m-%d %H:%M:%S"))
     print("Órdenes ordenadas por Fecha de Finalización:")
@@ -53,7 +56,8 @@ def obtenerOrdenesRealizadas(fila):
 
     return ordenesOrdenadas, fila
 def obtenerMotivosTipo():
-    conn = sqlite3.connect('MODULES/database.db')
+    db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     # Consultar motivos y tipos de orden
     cursor.execute("SELECT descripcion FROM MotivosTipo")
@@ -73,7 +77,8 @@ def buscarMotivosTipoFueraServicio(motivos):
 
 #debe comprobar que sea ambito "OrdenInspeccion" y estado "cerrada"
 def obtenerEstado():
-    conn = sqlite3.connect('MODULES/database.db')
+    db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     # Consultar orden con join a estado
     cursor.execute('''
@@ -107,7 +112,8 @@ def buscarEstadoCerradaOrden(estados):
                 print('Existe')        
     return estado
 def getOrdenInspeccion():
-    conn = sqlite3.connect('MODULES/database.db')
+    db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     # Consultar orden con join a estado
     cursor.execute('''

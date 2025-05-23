@@ -5,10 +5,8 @@ class Estado:
         self.__ambito = ambito
 
     def sosCompletamenteRealizada(self):
-        if self.__idEstado == 1:
-            return True
-        else:
-            return False
+        return self.__nombre == "Completamente Realizada"
+
     def getIdEstado(self):
         return self.__idEstado
     def getNombre(self):

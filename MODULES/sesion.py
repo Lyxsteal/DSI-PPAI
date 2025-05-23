@@ -7,5 +7,5 @@ class Sesion:
         self.usuario = usuario
     
     def obtenerEmpleadoLogeado(self):
-        return self.usuario.getNombre()
+        return self.usuario.obtenerEmpleado()
         
