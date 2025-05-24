@@ -172,8 +172,6 @@ class GestorOrdenDeInspeccion:
     def enviarMails(self):
         # Simula envío
         print("Enviando email de notificación...")
-        print(f"Motivos: {self.motivosSeleccionados}")
-        print(f"Comentario: {self.comentario}")
 
     def finCU(self):
         print('Fin Caso de Uso')

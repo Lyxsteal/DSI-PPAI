@@ -79,15 +79,17 @@ class PantallaOrdenInspeccion:
         self.observacion_entry = tk.Entry(frame, font=("Segoe UI", 10))
         self.observacion_entry.pack(padx=20, fill="x", pady=5)
 
+        self.comentarios_motivos = {}  # Nuevo: para guardar los Entry de comentarios por motivo
+
         tk.Label(frame, text="Motivos Fuera de Servicio:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
         self.motivos_listbox = tk.Listbox(frame, selectmode=tk.MULTIPLE, height=4, exportselection=False)
         for motivo in ["Falla técnica", "Equipo no disponible"]:
             self.motivos_listbox.insert(tk.END, motivo)
         self.motivos_listbox.pack(padx=20, fill="x", pady=5)
+        self.motivos_listbox.bind('<<ListboxSelect>>', self.actualizar_comentarios_por_motivo)  # Nuevo: actualizar comentarios
 
-        tk.Label(frame, text="Comentario general:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
-        self.comentario_entry = tk.Entry(frame, font=("Segoe UI", 10))
-        self.comentario_entry.pack(padx=20, fill="x", pady=5)
+        self.comentarios_frame = tk.Frame(frame, bg="#2a2a3b")  # Nuevo: frame para comentarios por motivo
+        self.comentarios_frame.pack(padx=20, fill="x", pady=5)
 
         tk.Button(
             frame, text="Confirmar Cierre", command=self.confirmar_cierre,
@@ -155,12 +157,20 @@ class PantallaOrdenInspeccion:
         orden_obj = self.ordenes_completas[idx]
         observacion = self.observacion_entry.get()
         motivos = [self.motivos_listbox.get(i) for i in self.motivos_listbox.curselection()]
-        comentario = self.comentario_entry.get()
+
+        # Nuevo: obtener comentarios por motivo
+        comentarios_por_motivo = {}
+        for motivo in motivos:
+            comentario = self.comentarios_motivos[motivo].get() if motivo in self.comentarios_motivos else ""
+            if not comentario:
+                messagebox.showerror("Error", f"Debe ingresar un comentario para el motivo '{motivo}'.")
+                return
+            comentarios_por_motivo[motivo] = comentario
 
         self.gestor.tomarOrdenInspeccionSeleccionada(orden_obj)
         self.gestor.tomarObservacionCierreOrden(observacion)
         self.gestor.tomarMotivoTipoFueraServicio(motivos)
-        self.gestor.tomarComentario(comentario)
+        
 
         if not self.gestor.validarExistenciaObservacion():
             messagebox.showerror("Error", "Observación requerida.")
@@ -179,3 +189,17 @@ class PantallaOrdenInspeccion:
         self.gestor.finCU()
         messagebox.showinfo("Éxito", "La orden fue cerrada correctamente.")
         self.ventanaOrdenes.destroy()
+
+    def actualizar_comentarios_por_motivo(self, event=None):
+        # Borra los widgets anteriores
+        for widget in self.comentarios_frame.winfo_children():
+            widget.destroy()
+        self.comentarios_motivos.clear()
+
+        motivos_seleccionados = [self.motivos_listbox.get(i) for i in self.motivos_listbox.curselection()]
+        for motivo in motivos_seleccionados:
+            lbl = tk.Label(self.comentarios_frame, text=f"Comentario para '{motivo}':", bg="#2a2a3b", fg="#bbbbbb", font=("Segoe UI", 9))
+            lbl.pack(anchor="w")
+            entry = tk.Entry(self.comentarios_frame, font=("Segoe UI", 10))
+            entry.pack(fill="x", pady=(0, 5))
+            self.comentarios_motivos[motivo] = entry
