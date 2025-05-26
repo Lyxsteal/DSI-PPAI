@@ -12,10 +12,10 @@ class Sismografo:
         return self.__identificadorSismografo
     def setCambioEstado(self, cambioEstado):
         self.__cambioEstado = cambioEstado
-    def fueraServicio(self, fechaActual, comentario, motivoTipo):
+    def fueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
         actualCE= self.__cambioEstado.esEstadoActual(self.__identificadorSismografo)
         self.__cambioEstado.setFechaHoraFin(actualCE)
-        self.cambiarEstadoFueraServicio(fechaActual, self.__identificadorSismografo, comentario, motivoTipo)
+        self.cambiarEstadoFueraServicio(idEstadoFdS, fechaActual, self.__identificadorSismografo, comentario, motivoTipo)
     def cambiarEstadoFueraServicio(self, idEstadoFdS, fechaActual, identificadorSismografo, comentario, motivoTipo):
         try:
             print(f"[DEBUG] Insertando CambioEstado con fecha: {fechaActual}, estado: {idEstadoFdS}, idSismografo: {identificadorSismografo}")

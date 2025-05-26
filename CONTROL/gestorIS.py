@@ -1,7 +1,7 @@
 import sqlite3
 from MODULES.sesion import Sesion
 from datetime import datetime
-from MODULES.usuario import Usuario
+from MODULES.Usuario import Usuario
 class GestorIS:
     def __init__(self, fechaHoraActual=None, mails=None, observacionCierre=None, ordenesInspeccion=None, sesionActual:Sesion=None):
         self.fechaHoraActual = None

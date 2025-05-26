@@ -69,5 +69,5 @@ class OrdenInspeccion:
         conn.commit()
         conn.close()
         print(f"Orden {ordenSeleccionada.getNroOrden()} cerrada correctamente.")
-    def ponerSismografoFueraServicio(self, fechaActual, comentario, motivoTipo):
-        self.__estacionSismo.ponerSismografoFueraServicio(fechaActual, comentario, motivoTipo)
+    def ponerSismografoFueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
+        self.__estacionSismo.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)

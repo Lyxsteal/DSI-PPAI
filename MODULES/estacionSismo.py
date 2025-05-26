@@ -13,5 +13,5 @@ class EstacionSismologica:
         if self.__sismografo is None:
             return "SIN_SISMOGRAFO"
         return self.__sismografo.getIdentificadorSismografo()
-    def ponerSismografoFueraServicio(self, fechaActual, comentario, motivoTipo):
-        self.__sismografo.fueraServicio(fechaActual, comentario, motivoTipo)
+    def ponerSismografoFueraServicio(self, idEstadoFdS,fechaActual, comentario, motivoTipo):
+        self.__sismografo.fueraServicio(idEstadoFdS,fechaActual, comentario, motivoTipo)

@@ -142,7 +142,7 @@ class GestorOrdenDeInspeccion:
         """Devuelve los motivos de fuera de servicio desde la base de datos."""
         conn = sqlite3.connect('MODULES/database.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", ('Fuera de Servicio'))
+        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", ('Fuera de Servicio',))
         fueraDeServ = cursor.fetchone()
         conn.close()
         return fueraDeServ[0] if fueraDeServ else None
@@ -151,8 +151,8 @@ class GestorOrdenDeInspeccion:
         self.ordenSeleccionada.cerrar(idEstadoCerrada, observacionCierre, ordenSeleccionada)
         self.ponerSismografoFueraEstado(idEstadoFdS, fechaActual, comentario, motivoTipo)
 
-    def ponerSismografoFueraEstado(self, fechaActual, comentario, motivoTipo):
-        self.ordenSeleccionada.ponerSismografoFueraServicio(fechaActual, comentario, motivoTipo)
+    def ponerSismografoFueraEstado(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
+        self.ordenSeleccionada.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
     def buscarResponsablesReparacion(self):
         """Ejemplo: Busca responsables de reparación (puedes adaptar según tu modelo)."""
         conn = sqlite3.connect('MODULES/database.db')

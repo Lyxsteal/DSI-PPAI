@@ -6,7 +6,7 @@ import os
 
 from CONTROL.gestorIS import GestorIS
 from BOUNDARY.pantallaOrdenInspeccion import PantallaOrdenInspeccion
-from MODULES.usuario import Usuario
+from MODULES.Usuario import Usuario
 from MODULES.sesion import Sesion
 from MODULES.empleado import Empleado
 
