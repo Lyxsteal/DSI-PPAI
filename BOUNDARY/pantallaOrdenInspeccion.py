@@ -184,9 +184,11 @@ class PantallaOrdenInspeccion:
 
         if not self.pedirConfirmacionCierreOrden():
             return
-
+        
+        fechaActual= self.gestor.getFechaHoraActual()
         estado_cerrada = self.gestor.buscarEstadoCerrada()
-        self.gestor.cerrarOrdenInspeccion(estado_cerrada, observacion, ordenSeleccionada, comentarios_por_motivo, motivoTipo)
+        estado_fueraservicio = self.gestor.buscarFueraDeServicio()
+        self.gestor.cerrarOrdenInspeccion(fechaActual, estado_fueraservicio, estado_cerrada, observacion, ordenSeleccionada, comentarios_por_motivo, motivoTipo)
         self.gestor.enviarMails()
         self.gestor.finCU()
         messagebox.showinfo("Éxito", "La orden fue cerrada correctamente.")

@@ -16,12 +16,12 @@ class Sismografo:
         actualCE= self.__cambioEstado.esEstadoActual(self.__identificadorSismografo)
         self.__cambioEstado.setFechaHoraFin(actualCE)
         self.cambiarEstadoFueraServicio(fechaActual, self.__identificadorSismografo, comentario, motivoTipo)
-    def cambiarEstadoFueraServicio(self, fechaActual, identificadorSismografo, comentario, motivoTipo):
+    def cambiarEstadoFueraServicio(self, idEstadoFdS, fechaActual, identificadorSismografo, comentario, motivoTipo):
         try:
-            print(f"[DEBUG] Insertando CambioEstado con fecha: {fechaActual}, estado: 2, idSismografo: {identificadorSismografo}")
+            print(f"[DEBUG] Insertando CambioEstado con fecha: {fechaActual}, estado: {idEstadoFdS}, idSismografo: {identificadorSismografo}")
             conn = sqlite3.connect('MODULES/database.db')
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO CambiosEstado (fechaHoraInicio, fechaHoraFin, idSismografo, idEstado) VALUES(?,?,?,?)",(fechaActual, None, identificadorSismografo, 2))
+            cursor.execute("INSERT INTO CambiosEstado (fechaHoraInicio, fechaHoraFin, idSismografo, idEstado) VALUES(?,?,?,?)",(fechaActual, None, identificadorSismografo, idEstadoFdS))
             conn.commit()
             conn.close()
             self.__cambioEstado = CambioEstado(fechaHoraInicio= fechaActual, fechaHoraFin= None, estado_obj= 2, idSismografo= identificadorSismografo, fechaActual= fechaActual, comentario= comentario, motivoTipo = motivoTipo)

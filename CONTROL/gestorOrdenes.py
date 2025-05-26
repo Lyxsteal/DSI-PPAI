@@ -142,15 +142,14 @@ class GestorOrdenDeInspeccion:
         """Devuelve los motivos de fuera de servicio desde la base de datos."""
         conn = sqlite3.connect('MODULES/database.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT nombreMotivo FROM MotivosFueraServicio")
-        motivos = [row[0] for row in cursor.fetchall()]
+        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", ('Fuera de Servicio'))
+        fueraDeServ = cursor.fetchone()
         conn.close()
-        return motivos
+        return fueraDeServ[0] if fueraDeServ else None
 
-    def cerrarOrdenInspeccion(self, idEstado, observacionCierre, ordenSeleccionada, comentario, motivoTipo):
-        self.ordenSeleccionada.cerrar(idEstado, observacionCierre, ordenSeleccionada)
-        fechaActual= self.getFechaHoraActual()
-        self.ponerSismografoFueraEstado(fechaActual, comentario, motivoTipo)
+    def cerrarOrdenInspeccion(self, fechaActual, idEstadoFdS, idEstadoCerrada, observacionCierre, ordenSeleccionada, comentario, motivoTipo):
+        self.ordenSeleccionada.cerrar(idEstadoCerrada, observacionCierre, ordenSeleccionada)
+        self.ponerSismografoFueraEstado(idEstadoFdS, fechaActual, comentario, motivoTipo)
 
     def ponerSismografoFueraEstado(self, fechaActual, comentario, motivoTipo):
         self.ordenSeleccionada.ponerSismografoFueraServicio(fechaActual, comentario, motivoTipo)
