@@ -50,53 +50,58 @@ class PantallaOrdenInspeccion:
 
         self.ventanaOrdenes = tk.Tk()
         self.ventanaOrdenes.title("Cierre de Orden")
-        self.ventanaOrdenes.geometry("600x1080")
-        alto_ventana = 550
-        y_centro = alto_ventana // 2
-
-        etiqueta = tk.Label(self.ventanaOrdenes, text="", fg='#4bc5eb')
-        etiqueta.config(font=("Cascadia Code", 20, "bold"))
-        etiqueta.pack()
-        etiqueta1 = tk.Label(self.ventanaOrdenes, text="Nombre de usuario:")
-        etiqueta1.config(font=("Cascadia Code", 8, "bold"))
-        etiqueta1.place(relx=0.5, y=y_centro - 200, anchor=tk.CENTER)
+        self.ventanaOrdenes.geometry("600x600")
 
         frame = tk.Frame(self.ventanaOrdenes, bg="#2a2a3b")
-        frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width=550, height=1030)
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         titulo = tk.Label(frame, text="Cierre de Orden", bg="#2a2a3b", fg="white", font=("Segoe UI", 16, "bold"))
-        titulo.pack(pady=10)
+        titulo.pack(pady=(10, 20))
 
-        tk.Label(frame, text="Seleccione una orden:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w")
+        tk.Label(frame, text="Seleccione una orden:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(anchor="w")
 
         self.ordenes_completas = self.gestor.ordenes
         lista_visual = self.mostrarOrdCompletamenteRealizadas(self.ordenes_completas)
         self.ordenSeleccionada = tk.StringVar()
         self.ordenes_combo = ttk.Combobox(frame, values=lista_visual, textvariable=self.ordenSeleccionada, state="readonly")
-        self.ordenes_combo.pack(padx=20, fill="x", pady=5)
+        self.ordenes_combo.pack(fill="x", pady=5)
 
-        tk.Label(frame, text="Observación de cierre:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
+        tk.Label(frame, text="Observación de cierre:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(anchor="w", pady=(10, 0))
         self.observacion_entry = tk.Entry(frame, font=("Segoe UI", 10))
-        self.observacion_entry.pack(padx=20, fill="x", pady=5)
+        self.observacion_entry.pack(fill="x", pady=5)
 
-        self.comentarios_motivos = {}  # Nuevo: para guardar los Entry de comentarios por motivo
+        self.comentarios_motivos = {}
 
-        tk.Label(frame, text="Motivos Fuera de Servicio:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
-        self.motivos_listbox = tk.Listbox(frame, selectmode=tk.MULTIPLE, height=10, exportselection=False)
-        
+        tk.Label(frame, text="Motivos Fuera de Servicio:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(anchor="w", pady=(10, 0))
+        self.motivos_listbox = tk.Listbox(frame, selectmode=tk.MULTIPLE, height=6, exportselection=False)
         lista_motivos = self.gestor.buscarMotivoTiposFueraServicio()
         for motivo in lista_motivos:
             self.motivos_listbox.insert(tk.END, motivo)
-        self.motivos_listbox.pack(padx=20, fill="x", pady=5)
-        self.motivos_listbox.bind('<<ListboxSelect>>', self.actualizar_comentarios_por_motivo)  # Nuevo: actualizar comentarios
+        self.motivos_listbox.pack(fill="x", pady=5)
+        self.motivos_listbox.bind('<<ListboxSelect>>', self.actualizar_comentarios_por_motivo)
 
-        self.comentarios_frame = tk.Frame(frame, bg="#2a2a3b")  # Nuevo: frame para comentarios por motivo
-        self.comentarios_frame.pack(padx=20, fill="x", pady=5)
+        # --- Scrollable comentarios por motivo ---
+        comentarios_container = tk.Frame(frame, bg="#2a2a3b")
+        comentarios_container.pack(fill="both", expand=False, pady=5)
+        canvas = tk.Canvas(comentarios_container, bg="#2a2a3b", height=120, highlightthickness=0)
+        scrollbar = tk.Scrollbar(comentarios_container, orient="vertical", command=canvas.yview)
+        self.comentarios_frame = tk.Frame(canvas, bg="#2a2a3b")
+
+        self.comentarios_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        canvas.create_window((0, 0), window=self.comentarios_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        # --- Fin scrollable ---
 
         tk.Button(
             frame, text="Confirmar Cierre", command=self.confirmar_cierre,
             bg="#29d884", fg="white", font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2"
-        ).pack(pady=20, ipadx=10, ipady=5)
+        ).pack(pady=10, ipadx=10, ipady=5)
 
         tk.Button(
             frame, text="Cancelar", command=self.ventanaOrdenes.destroy,
