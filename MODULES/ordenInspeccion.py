@@ -1,6 +1,7 @@
 from typing import Optional
 from MODULES.estacionSismo import EstacionSismologica  # Adjust the import according to your project structure
-
+from datetime import datetime
+import sqlite3
 # Import or define EstacionSismologica before using it
 # from .estacionSismologica import EstacionSismologica  # Uncomment and adjust if you have this module
 
@@ -14,9 +15,7 @@ class OrdenInspeccion:
         observacionCierre=None,
         empleado=None,
         estado=None,
-        estacion: Optional["EstacionSismologica"] = None,  # Use forward reference if not yet defined
-        
-    ):
+        estacion: Optional["EstacionSismologica"] = None):
         self.numeroOrden             = numeroOrden
         self.__fechaHoraInicio       = fechaHoraInicio
         self.__fechaHoraCierre       = fechaHoraCierre
@@ -53,3 +52,22 @@ class OrdenInspeccion:
             return self.__empleado == empleado
         # Si es objeto Empleado, compara por nombre
         return self.__empleado == empleado.nombre
+    def cerrar(self, idEstado, observacionCierre, ordenSeleccionada):
+        tiempoActual = self.setFechaHoraCierre()
+        self.setEstadoCierre(idEstado, tiempoActual, observacionCierre, ordenSeleccionada)
+    def setFechaHoraCierre(self):
+        tiempoActual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return tiempoActual
+    def setEstadoCierre(self, idEstado, fechaCierre, observacionCierre, ordenSeleccionada):
+        conn = sqlite3.connect('MODULES/database.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE OrdenesInspeccion
+            SET fechaHoraCierre = ?, observacionCierre = ?, idEstado = ?
+            WHERE numeroOrden = ?
+        ''', (fechaCierre, observacionCierre, idEstado, ordenSeleccionada.getNroOrden()))
+        conn.commit()
+        conn.close()
+        print(f"Orden {ordenSeleccionada.getNroOrden()} cerrada correctamente.")
+    def ponerSismografoFueraServicio(self, fechaActual, comentario, motivoTipo):
+        self.__estacionSismo.ponerSismografoFueraServicio(fechaActual, comentario, motivoTipo)

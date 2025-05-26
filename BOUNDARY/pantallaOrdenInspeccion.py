@@ -50,7 +50,7 @@ class PantallaOrdenInspeccion:
 
         self.ventanaOrdenes = tk.Tk()
         self.ventanaOrdenes.title("Cierre de Orden")
-        self.ventanaOrdenes.geometry("600x550")
+        self.ventanaOrdenes.geometry("600x1080")
         alto_ventana = 550
         y_centro = alto_ventana // 2
 
@@ -62,7 +62,7 @@ class PantallaOrdenInspeccion:
         etiqueta1.place(relx=0.5, y=y_centro - 200, anchor=tk.CENTER)
 
         frame = tk.Frame(self.ventanaOrdenes, bg="#2a2a3b")
-        frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width=440, height=500)
+        frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width=550, height=1030)
 
         titulo = tk.Label(frame, text="Cierre de Orden", bg="#2a2a3b", fg="white", font=("Segoe UI", 16, "bold"))
         titulo.pack(pady=10)
@@ -82,8 +82,10 @@ class PantallaOrdenInspeccion:
         self.comentarios_motivos = {}  # Nuevo: para guardar los Entry de comentarios por motivo
 
         tk.Label(frame, text="Motivos Fuera de Servicio:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(padx=20, anchor="w", pady=(10, 0))
-        self.motivos_listbox = tk.Listbox(frame, selectmode=tk.MULTIPLE, height=4, exportselection=False)
-        for motivo in ["Falla técnica", "Equipo no disponible"]:
+        self.motivos_listbox = tk.Listbox(frame, selectmode=tk.MULTIPLE, height=10, exportselection=False)
+        
+        lista_motivos = self.gestor.buscarMotivoTiposFueraServicio()
+        for motivo in lista_motivos:
             self.motivos_listbox.insert(tk.END, motivo)
         self.motivos_listbox.pack(padx=20, fill="x", pady=5)
         self.motivos_listbox.bind('<<ListboxSelect>>', self.actualizar_comentarios_por_motivo)  # Nuevo: actualizar comentarios
@@ -103,9 +105,9 @@ class PantallaOrdenInspeccion:
 
         self.ventanaOrdenes.mainloop()
 
-    def mostrarOrdCompletamenteRealizadas(self, ordenes):
+    def mostrarOrdCompletamenteRealizadas(self, ordenes_ordenadas):
         lista_visual = []
-        for orden in ordenes:
+        for orden in ordenes_ordenadas:
             texto = f"N°: {orden.getNroOrden()} | Fin: {orden.getfechaHoraFinalizacion()} | Estación: {orden.getNombreEstacion()} | Sismógrafo: {orden.getIdentificadorSismografo()}"
             lista_visual.append(texto)
         print("Lista visual para combobox:", lista_visual)
@@ -166,10 +168,10 @@ class PantallaOrdenInspeccion:
                 messagebox.showerror("Error", f"Debe ingresar un comentario para el motivo '{motivo}'.")
                 return
             comentarios_por_motivo[motivo] = comentario
-
-        self.gestor.tomarOrdenInspeccionSeleccionada(orden_obj)
-        self.gestor.tomarObservacionCierreOrden(observacion)
-        self.gestor.tomarMotivoTipoFueraServicio(motivos)
+        
+        ordenSeleccionada = self.gestor.tomarOrdenInspeccionSeleccionada(orden_obj)
+        observacion = self.gestor.tomarObservacionCierreOrden(observacion)
+        motivoTipo = self.gestor.tomarMotivoTipoFueraServicio(motivos)
         
 
         if not self.gestor.validarExistenciaObservacion():
@@ -184,7 +186,7 @@ class PantallaOrdenInspeccion:
             return
 
         estado_cerrada = self.gestor.buscarEstadoCerrada()
-        self.gestor.cerrarOrdenInspeccion(estado_cerrada)
+        self.gestor.cerrarOrdenInspeccion(estado_cerrada, observacion, ordenSeleccionada, comentarios_por_motivo, motivoTipo)
         self.gestor.enviarMails()
         self.gestor.finCU()
         messagebox.showinfo("Éxito", "La orden fue cerrada correctamente.")

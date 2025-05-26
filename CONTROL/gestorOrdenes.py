@@ -12,29 +12,33 @@ from BOUNDARY.pantallaCCRS import PantallaCCRS
 from BOUNDARY.interfazNotificacionEmail import InterfazNotificacionEmail
 from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
+from MODULES.cambioEstado import CambioEstado
 
 class GestorOrdenDeInspeccion:
-    def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivoTipo:Optional[MotivoTipo] = None, estado:Optional[Estado] = None, 
-                 pantallaCCRS:Optional[PantallaCCRS] = None, interfaz:Optional[InterfazNotificacionEmail] = None , ordenes = None):
+    def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivos = None, estado:Optional[Estado] = None, 
+                 pantallaCCRS:Optional[PantallaCCRS] = None, interfaz:Optional[InterfazNotificacionEmail] = None , ordenes = None, fechaActual = None, ordenSeleccionada = None, observacion = None):
         self.sesion = sesionActual
         self.empleado = empleado
-        self.motivoTipo = motivoTipo
+        self.motivos = motivos
         self.estado = estado
         self.pantallaCCRS = pantallaCCRS
         self.interfaz = interfaz
-        self.empleado = None
-        self.ordenes = None
+        self.ordenes = ordenes
+        self.fechaActual = fechaActual
+        self.ordenSeleccionada = ordenSeleccionada
+        self.comentarios = []
+        self.observacionCierre = observacion
 
     def iniciarCierreOrdenInspeccion(self):
         print('Inicio el Cierre de Orden Inspeccion')
         self.empleado = self.buscarEmpleadoLogueado()
-        empleado_log = self.sesion.obtenerEmpleadoLogeado()
-        print('Empleado logueado: ' + empleado_log)  # <--- Cambiado aquí
-        ordenes = self.ordenaPorFechaFinalizacion(self.buscarOrdenesDeInspeccion())
-        self.ordenes = ordenes  
-        print('Existen ' + str(len(ordenes)) + ' ordenes con este empleado que están en estado completamente realizadas')
+        print('Empleado logueado: ' + self.empleado)  # <--- Cambiado aquí
+        ordenes = self.buscarOrdenesDeInspeccion()
+        ordenes_ordenadas = self.ordenaPorFechaFinalizacion(ordenes)
+        self.ordenes = ordenes_ordenadas  
+        print('Existen ' + str(len(ordenes_ordenadas)) + ' ordenes con este empleado que están en estado completamente realizadas')
         print('Son las siguientes:')
-        for i in ordenes:
+        for i in ordenes_ordenadas:
             print(i.getNroOrden())
 
     def buscarEmpleadoLogueado(self):
@@ -58,8 +62,10 @@ class GestorOrdenDeInspeccion:
         ordenesFiltro = []
         for orden in ordenes:
             numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, nombreEmpleado, idEstado, codigoES, nombreEstado, nombre, identificadorSismografo = orden
+            cambioEstado = CambioEstado()
             estado = Estado(idEstado, nombreEstado)
             sismografo = Sismografo(codigoES, identificadorSismografo)
+            sismografo.setCambioEstado(cambioEstado)
             estacion = EstacionSismologica(codigoES, nombre, sismografo_obj=sismografo)
             ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, nombreEmpleado, estado, estacion)
             if self.empleado is not None and ordenInspeccion.sosCompletamenteRealizada() and ordenInspeccion.sosDeEmpleado(self.empleado):
@@ -72,28 +78,43 @@ class GestorOrdenDeInspeccion:
     
     def tomarOrdenInspeccionSeleccionada(self, orden):
         self.ordenSeleccionada = orden
+        return orden
 
     def pedirObservacionCierreOrden(self):
         pass
 
     def tomarObservacionCierreOrden(self, observacion):
         self.observacionCierre = observacion
-
+        return observacion
     def buscarMotivoTiposFueraServicio(self):
-        pass
+        lista_motivos = []
+        conn = sqlite3.connect('MODULES/database.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT descripcion FROM MotivosTipo
+        ''')
+        motivos = cursor.fetchall()
+        conn.close()
+        for i in motivos:
+            descripcion = i
+            motivo = MotivoTipo(descripcion)
+            motivo.getDescripcion()
+            lista_motivos.append(motivo)
+        return lista_motivos
 
     def pedirSeleccionMotivoTipoFueraServicio(self):
         pass
 
     def tomarMotivoTipoFueraServicio(self, motivos):
         self.motivosSeleccionados = motivos
-    
+        return motivos
     def pedirComentario(self):
         pass
 
     def tomarComentario(self, comentario):
-        self.comentario = comentario
-
+        self.comentarios.append(comentario)
+        return self.comentarios
+        
     def pedirConfirmacionCierreOrden(self):
         pass
 
@@ -115,9 +136,8 @@ class GestorOrdenDeInspeccion:
         return result[0] if result else None
 
     def getFechaHoraActual(self):
-        """Devuelve la fecha y hora actual en formato string."""
-        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
+        self.fechaActual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return self.fechaActual
     def buscarFueraDeServicio(self):
         """Devuelve los motivos de fuera de servicio desde la base de datos."""
         conn = sqlite3.connect('MODULES/database.db')
@@ -127,39 +147,13 @@ class GestorOrdenDeInspeccion:
         conn.close()
         return motivos
 
-    def cerrarOrdenInspeccion(self, idEstado):
-        if not self.ordenSeleccionada:
-            print("No hay orden seleccionada.")
-            return
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        fecha_cierre = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute('''
-            UPDATE OrdenesInspeccion
-            SET fechaHoraCierre = ?, observacionCierre = ?, idEstado = ?
-            WHERE numeroOrden = ?
-        ''', (fecha_cierre, self.observacionCierre, idEstado, self.ordenSeleccionada.getNroOrden()))
-        conn.commit()
-        conn.close()
-        print(f"Orden {self.ordenSeleccionada.getNroOrden()} cerrada correctamente.")
+    def cerrarOrdenInspeccion(self, idEstado, observacionCierre, ordenSeleccionada, comentario, motivoTipo):
+        self.ordenSeleccionada.cerrar(idEstado, observacionCierre, ordenSeleccionada)
+        fechaActual= self.getFechaHoraActual()
+        self.ponerSismografoFueraEstado(fechaActual, comentario, motivoTipo)
 
-    def ponerSismografoFueraEstado(self):
-        """Ejemplo: Cambia el estado del sismógrafo a fuera de servicio."""
-        if not self.ordenSeleccionada:
-            print("No hay orden seleccionada para poner fuera de servicio.")
-            return
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        # Suponiendo que hay un campo 'estado' en la tabla Sismografos
-        cursor.execute('''
-            UPDATE Sismografos
-            SET estado = ?
-            WHERE identificadorSismografo = ?
-        ''', ('Fuera de Servicio', self.ordenSeleccionada.getIdentificadorSismografo()))
-        conn.commit()
-        conn.close()
-        print(f"Sismógrafo {self.ordenSeleccionada.getIdentificadorSismografo()} puesto fuera de servicio.")
-
+    def ponerSismografoFueraEstado(self, fechaActual, comentario, motivoTipo):
+        self.ordenSeleccionada.ponerSismografoFueraServicio(fechaActual, comentario, motivoTipo)
     def buscarResponsablesReparacion(self):
         """Ejemplo: Busca responsables de reparación (puedes adaptar según tu modelo)."""
         conn = sqlite3.connect('MODULES/database.db')
