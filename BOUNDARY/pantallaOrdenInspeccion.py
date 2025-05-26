@@ -94,7 +94,7 @@ class PantallaOrdenInspeccion:
         self.comentarios_frame.pack(padx=20, fill="x", pady=5)
 
         tk.Button(
-            frame, text="Confirmar Cierre", command=self.confirmar_cierre,
+            frame, text="Confirmar Cierre", command=self.tomarConfirmacionCierreOrden,
             bg="#29d884", fg="white", font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2"
         ).pack(pady=20, ipadx=10, ipady=5)
 
@@ -119,14 +119,18 @@ class PantallaOrdenInspeccion:
     def tomarOrdenInspeccionSeleccionada(self):
         idx = self.ordenes_combo.current()
         if idx < 0:
-            return None
+            messagebox.showerror("Error", "Debe seleccionar una orden.")
+            return
         return self.ordenes_completas[idx]
 
     def pedirObservacionCierreOrden(self):
         return self.observacion_entry.get()
 
     def tomarObservacionCierreOrden(self):
-        return self.observacion_entry.get()
+        observacion = self.observacion_entry.get()
+        self.gestor.tomarObservacionCierreOrden(observacion)
+        self.mostrarMotivosTipoFueraServicio()
+        return observacion
 
     def mostrarMotivosTipoFueraServicio(self):
         return [self.motivos_listbox.get(i) for i in range(self.motivos_listbox.size())]
@@ -143,22 +147,15 @@ class PantallaOrdenInspeccion:
     def tomarComentario(self):
         return self.comentario_entry.get()
 
-    def pedirConfirmacionCierreOrden(self):
-        print("UI: Pidiendo confirmación final para cerrar la orden.")
-        return messagebox.askyesno("Confirmar Cierre", "¿Está seguro de que desea cerrar esta orden de inspección?")
-
     def tomarConfirmacionCierreOrden(self):
         return True
 
-    def confirmar_cierre(self):
-        idx = self.ordenes_combo.current()
-        if idx < 0:
-            messagebox.showerror("Error", "Debe seleccionar una orden.")
+    def tomarConfirmacionCierreOrden(self):
+        orden_obj = self.tomarOrdenInspeccionSeleccionada()
+        if orden_obj is None:
             return
-
-        orden_obj = self.ordenes_completas[idx]
-        observacion = self.observacion_entry.get()
-        motivos = [self.motivos_listbox.get(i) for i in self.motivos_listbox.curselection()]
+        observacion = self.tomarObservacionCierreOrden()
+        motivos = self.tomarMotivoTipoFueraServicio()
 
         # Nuevo: obtener comentarios por motivo
         comentarios_por_motivo = {}
@@ -168,27 +165,13 @@ class PantallaOrdenInspeccion:
                 messagebox.showerror("Error", f"Debe ingresar un comentario para el motivo '{motivo}'.")
                 return
             comentarios_por_motivo[motivo] = comentario
-        
-        ordenSeleccionada = self.gestor.tomarOrdenInspeccionSeleccionada(orden_obj)
-        observacion = self.gestor.tomarObservacionCierreOrden(observacion)
-        motivoTipo = self.gestor.tomarMotivoTipoFueraServicio(motivos)
-        
-
-        if not self.gestor.validarExistenciaObservacion():
-            messagebox.showerror("Error", "Observación requerida.")
+        self.gestor.tomarComentario(comentarios_por_motivo)
+        if not self.gestor.tomarConfirmacionCierreOrden(orden_obj, observacion, motivos):
+            print("Validacion fallida, no se puede cerrar la orden.")
             return
-
-        if not self.gestor.validarExistenciaMotivoSeleccionado():
-            messagebox.showerror("Error", "Debe seleccionar al menos un motivo.")
-            return
-
-        if not self.pedirConfirmacionCierreOrden():
-            return
-        
-        fechaActual= self.gestor.getFechaHoraActual()
-        estado_cerrada = self.gestor.buscarEstadoCerrada()
-        estado_fueraservicio = self.gestor.buscarFueraDeServicio()
-        self.gestor.cerrarOrdenInspeccion(fechaActual, estado_fueraservicio, estado_cerrada, observacion, ordenSeleccionada, comentarios_por_motivo, motivoTipo)
+        if not self.gestor.pedirConfirmacionCierreOrden():
+            messagebox.showinfo("Cancelado", "El cierre de la orden ha sido cancelado.")
+            exit()  
         self.gestor.enviarMails()
         self.gestor.finCU()
         messagebox.showinfo("Éxito", "La orden fue cerrada correctamente.")

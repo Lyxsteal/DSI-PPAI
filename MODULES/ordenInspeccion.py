@@ -2,6 +2,8 @@ from typing import Optional
 from MODULES.estacionSismo import EstacionSismologica  # Adjust the import according to your project structure
 from datetime import datetime
 import sqlite3
+from MODULES.empleado import Empleado
+from MODULES.estado import Estado
 # Import or define EstacionSismologica before using it
 # from .estacionSismologica import EstacionSismologica  # Uncomment and adjust if you have this module
 
@@ -13,9 +15,9 @@ class OrdenInspeccion:
         fechaHoraCierre=None,
         fechaHoraFinalizacion=None,
         observacionCierre=None,
-        empleado=None,
-        estado=None,
-        estacion: Optional["EstacionSismologica"] = None):
+        empleado:Empleado=None,
+        estado:Estado=None,
+        estacion:EstacionSismologica = None):
         self.numeroOrden             = numeroOrden
         self.__fechaHoraInicio       = fechaHoraInicio
         self.__fechaHoraCierre       = fechaHoraCierre
@@ -48,10 +50,15 @@ class OrdenInspeccion:
     
     def sosDeEmpleado(self, empleado):
         # Si self.__empleado es string (nombre), compara por nombre
-        if isinstance(empleado, str):
-            return self.__empleado == empleado
-        # Si es objeto Empleado, compara por nombre
-        return self.__empleado == empleado.nombre
+        conn = sqlite3.connect('MODULES/database.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT nombreEmpleado FROM Empleados WHERE idEmpleado = ?
+        ''', (empleado))
+        nombreEmpleado = cursor.fetchone()
+        conn.close()
+        if nombreEmpleado is not None:
+            nombreEmpleado = nombreEmpleado[0]
     def cerrar(self, idEstado, observacionCierre, ordenSeleccionada):
         tiempoActual = self.setFechaHoraCierre()
         self.setEstadoCierre(idEstado, tiempoActual, observacionCierre, ordenSeleccionada)

@@ -13,6 +13,7 @@ from BOUNDARY.interfazNotificacionEmail import InterfazNotificacionEmail
 from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
 from MODULES.cambioEstado import CambioEstado
+from tkinter import messagebox
 
 class GestorOrdenDeInspeccion:
     def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivos = None, estado:Optional[Estado] = None, 
@@ -26,8 +27,13 @@ class GestorOrdenDeInspeccion:
         self.ordenes = ordenes
         self.fechaActual = fechaActual
         self.ordenSeleccionada = ordenSeleccionada
-        self.comentarios = []
+        self.comentarios = None
         self.observacionCierre = observacion
+        self.ambitoOI = None
+        self.ambitoSismografo = None
+        self.idCerrada = None
+        self.idFDS = None
+        self.motivosSeleccionados = None
 
     def iniciarCierreOrdenInspeccion(self):
         print('Inicio el Cierre de Orden Inspeccion')
@@ -111,41 +117,74 @@ class GestorOrdenDeInspeccion:
     def pedirComentario(self):
         pass
 
-    def tomarComentario(self, comentario):
-        self.comentarios.append(comentario)
+    def tomarComentario(self, comentario_por_motivo):
+        self.comentarios = comentario_por_motivo
         return self.comentarios
         
     def pedirConfirmacionCierreOrden(self):
-        pass
+        print("UI: Pidiendo confirmación final para cerrar la orden.")
+        return messagebox.askyesno("Confirmar Cierre", "¿Está seguro de que desea cerrar esta orden de inspección?")
 
-    def tomarConfirmacionCierreOrden(self):
-        pass
 
-    def validarExistenciaObservacion(self):
-        return bool(self.observacionCierre.strip())
+    def tomarConfirmacionCierreOrden(self, orden, observacion, motivos):
+        print(observacion)
+        print(motivos)
+        self.tomarOrdenInspeccionSeleccionada(orden)
+        self.observacionCierre = self.validarExistenciaObservacion(observacion)
+        if self.observacionCierre is None:
+            return
+        self.motivosSeleccionados = self.validarExistenciaMotivoSeleccionado(motivos)
+        if self.motivosSeleccionados is None:
+            return
+        self.buscarEstadoCerrada()
+        return True
+            
 
-    def validarExistenciaMotivoSeleccionado(self):
-        return bool(self.motivosSeleccionados)
+    def validarExistenciaObservacion(self, observacion):
+        observacion = observacion.strip()
+        if observacion == "":
+            messagebox.showerror("Error", "Debe ingresar una observación.")
+            return
+        else:
+            return observacion
 
+    def validarExistenciaMotivoSeleccionado(self, motivos):
+        motivosSeleccionados = motivos
+        if len(motivosSeleccionados) == 0:
+            messagebox.showerror("Error", "Debe seleccionar al menos un motivo.")
+            return 
+        else:
+            return motivosSeleccionados
     def buscarEstadoCerrada(self):
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", ('Cerrada',))
-        result = cursor.fetchone()
-        conn.close()
-        return result[0] if result else None
+        self.estado = Estado()
+        self.ambitoOI = self.estado.sosAmbito(ambito='Orden Inspeccion')
+        if self.ambitoOI is None:
+            messagebox.showerror("Error", "No se pudo encontrar el ambito 'Orden Inspeccion'.")
+            exit()
+        self.idCerrada = self.estado.sosEstado(nombre='Cerrada')
+        print("ID Cerrada:", self.idCerrada)  # Debugging line
+        if self.idCerrada is not None:
+            self.getFechaHoraActual()
+        else:
+            messagebox.showerror("Error", "No se pudo encontrar el estado 'Cerrada'.")
+            exit()
 
+    
     def getFechaHoraActual(self):
         self.fechaActual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        return self.fechaActual
+        self.buscarFueraDeServicio()
+
     def buscarFueraDeServicio(self):
-        """Devuelve los motivos de fuera de servicio desde la base de datos."""
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", ('Fuera de Servicio',))
-        fueraDeServ = cursor.fetchone()
-        conn.close()
-        return fueraDeServ[0] if fueraDeServ else None
+        self.ambitoSismografo = self.estado.sosAmbito(ambito='Sismografo')
+        if self.ambitoSismografo is None:
+            messagebox.showerror("Error", "No se pudo encontrar el ambito 'Sismografo'.")
+            exit()
+        self.idFDS = self.estado.sosEstado(nombre='Fuera de Servicio')
+        if self.idFDS is not None:
+            self.cerrarOrdenInspeccion(self.fechaActual, self.idFDS, self.idCerrada, self.observacionCierre, self.ordenSeleccionada, self.comentarios, self.motivosSeleccionados)
+        else:
+            messagebox.showerror("Error", "No se pudo encontrar el estado 'Fuera de Servicio'.")
+            exit()
 
     def cerrarOrdenInspeccion(self, fechaActual, idEstadoFdS, idEstadoCerrada, observacionCierre, ordenSeleccionada, comentario, motivoTipo):
         self.ordenSeleccionada.cerrar(idEstadoCerrada, observacionCierre, ordenSeleccionada)

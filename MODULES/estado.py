@@ -1,5 +1,6 @@
+import sqlite3
 class Estado:
-    def __init__(self, idEstado, nombre, ambito=None):
+    def __init__(self, idEstado=None, nombre=None, ambito=None):
         self.__idEstado = idEstado
         self.__nombre = nombre
         self.__ambito = ambito
@@ -23,13 +24,24 @@ class Estado:
             return True
         else:
             return False
-    def sosCerrada(self):
-        if self.__nombre == "Cerrado":
-            return True
-        else:
-            return False
-    def sosFueradeServicio(self):
-        if self.__nombre == "Fuera de Servicio":
-            return True
-        else:
-            return False
+    def sosAmbito(self, ambito):
+        conn = sqlite3.connect('MODULES/database.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM Estados WHERE ambito = ?", (ambito,))
+        ambitoOrdenInspeccion = cursor.fetchall()
+        conn.close()
+        return ambitoOrdenInspeccion if ambitoOrdenInspeccion else None
+    def sosEstado(self, nombre):
+        conn = sqlite3.connect('MODULES/database.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", (nombre,))
+        estadoCerrada = cursor.fetchone()
+        conn.close()
+        return estadoCerrada[0] if estadoCerrada else None
+    def sosFueradeServicio(self, nombre):
+        conn = sqlite3.connect('MODULES/database.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", (nombre,))
+        estadoFDS = cursor.fetchone()
+        conn.close()
+        return estadoFDS[0] if estadoFDS else None

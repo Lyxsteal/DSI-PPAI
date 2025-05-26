@@ -35,6 +35,7 @@ class CambioEstado:
         conn.commit()
         conn.close()
     def crearMotivoFueraServicio(self, fechaActual, comentario_por_motivo, motivoTipo):
+        print(comentario_por_motivo)
         try:
             for motivo, comentario in comentario_por_motivo.items():
                 print(f'[DEBUG] Insertando MotivoFueraServicio con comentario: {comentario}, motivoTipo: {motivo}')
