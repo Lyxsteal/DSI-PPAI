@@ -1,5 +1,5 @@
 class Empleado:
-    def __init__(self, nombre, apellido, mail, telefono, idEmpleado):
+    def __init__(self, nombre=None, apellido=None, mail=None, telefono=None, idEmpleado=None):
         self.nombre = nombre
         self.apellido = apellido
         self.mail = mail
@@ -11,4 +11,3 @@ class Empleado:
     
     def obtenerTelefono(self):
         return self.telefono
-    

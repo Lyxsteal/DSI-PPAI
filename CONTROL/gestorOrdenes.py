@@ -55,9 +55,10 @@ class GestorOrdenDeInspeccion:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT o.numeroOrden, o.fechaHoraInicio, o.fechaHoraCierre, o.fechaHoraFinalizacion, o.observacionCierre, 
+            SELECT o.numeroOrden, o.fechaHoraFinalizacion,  
                 o.nombreEmpleado, o.idEstado, o.codigoES, e.nombreEstado, es.nombre, s.identificadorSismografo
             FROM OrdenesInspeccion o
+            JOIN Empleados em ON o.nombreEmpleado = em.nombre
             JOIN Estados e ON o.idEstado = e.idEstado
             JOIN EstacionesSismologicas es ON o.codigoES = es.codigo
             JOIN Sismografos s ON o.codigoES = s.codigoEstacion
@@ -67,15 +68,17 @@ class GestorOrdenDeInspeccion:
 
         ordenesFiltro = []
         for orden in ordenes:
-            numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, nombreEmpleado, idEstado, codigoES, nombreEstado, nombre, identificadorSismografo = orden
+            numeroOrden, fechaHoraFinalizacion, nombreEmpleado, idEstado, codigoES, nombreEstado, nombre, identificadorSismografo = orden
             cambioEstado = CambioEstado()
             estado = Estado(idEstado, nombreEstado)
             sismografo = Sismografo(codigoES, identificadorSismografo)
             sismografo.setCambioEstado(cambioEstado)
-            estacion = EstacionSismologica(codigoES, nombre, sismografo_obj=sismografo)
-            ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio, fechaHoraCierre, fechaHoraFinalizacion, observacionCierre, nombreEmpleado, estado, estacion)
+            estacion = EstacionSismologica(codigoES, nombre, sismografo=sismografo)
+            ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio=None, fechaHoraCierre=None, fechaHoraFinalizacion=fechaHoraFinalizacion, observacionCierre=None, empleado=Empleado(nombreEmpleado), estado=Estado(nombre=nombreEstado), estacion=estacion)
             if self.empleado is not None and ordenInspeccion.sosCompletamenteRealizada() and ordenInspeccion.sosDeEmpleado(self.empleado):
-                ordenesFiltro.append(ordenInspeccion)
+                    numeroOrden, fechaHoraFinalizacion, nombreEstacion, identificadorSismografo = ordenInspeccion.obtenerDatos()
+                    ordenesFiltro.append(ordenInspeccion)
+        self.ordenaPorFechaFinalizacion(ordenesFiltro)
         return ordenesFiltro
     
     def ordenaPorFechaFinalizacion(self, ordenes):

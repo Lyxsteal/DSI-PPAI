@@ -18,7 +18,7 @@ class OrdenInspeccion:
         empleado:Empleado=None,
         estado:Estado=None,
         estacion:EstacionSismologica = None):
-        self.numeroOrden             = numeroOrden
+        self.__numeroOrden             = numeroOrden
         self.__fechaHoraInicio       = fechaHoraInicio
         self.__fechaHoraCierre       = fechaHoraCierre
         self.__fechaHoraFinalizacion = fechaHoraFinalizacion
@@ -32,8 +32,14 @@ class OrdenInspeccion:
             return self.__estado.sosCompletamenteRealizada()
         return False
     
+    def obtenerDatos(self):
+        nroOrden = self.getNroOrden()
+        fechaHoraFinalizacion = self.getfechaHoraFinalizacion()
+        nombreEstacion =self.getNombreEstacion()
+        idSismografo = self.getIdentificadorSismografo()
+        return nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo
     def getNroOrden(self):
-        return self.numeroOrden
+        return self.__numeroOrden
 
     def getfechaHoraFinalizacion(self):
         return self.__fechaHoraFinalizacion
@@ -48,17 +54,9 @@ class OrdenInspeccion:
             return "SIN_ESTACION"
         return self.__estacionSismo.getNombreEstacion()
     
-    def sosDeEmpleado(self, empleado):
-        # Si self.__empleado es string (nombre), compara por nombre
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT nombreEmpleado FROM Empleados WHERE idEmpleado = ?
-        ''', (empleado))
-        nombreEmpleado = cursor.fetchone()
-        conn.close()
-        if nombreEmpleado is not None:
-            nombreEmpleado = nombreEmpleado[0]
+    def sosDeEmpleado(self, nombreEmpleado):
+        if self.__empleado.nombre == nombreEmpleado:
+            return True
     def cerrar(self, idEstado, observacionCierre, ordenSeleccionada):
         tiempoActual = self.setFechaHoraCierre()
         self.setEstadoCierre(idEstado, tiempoActual, observacionCierre, ordenSeleccionada)
