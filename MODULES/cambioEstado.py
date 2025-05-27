@@ -12,7 +12,7 @@ class CambioEstado:
             self.crearMotivoFueraServicio(fechaActual, comentario, motivoTipo)
     def esEstadoActual(self, idSismografo):
         cambiosEstado = []
-        conn = sqlite3.connect('MODULES/database.db')
+        conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute('''
             SELECT * FROM CambiosEstado 
@@ -25,7 +25,7 @@ class CambioEstado:
         return actualCE
     def setFechaHoraFin(self, actualCE):
         tiempoFin = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        conn = sqlite3.connect('MODULES/database.db')
+        conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute('''
             UPDATE CambiosEstado
@@ -37,7 +37,7 @@ class CambioEstado:
         try:
             for motivo, comentario in comentario_por_motivo.items():
                 print(f'[DEBUG] Insertando MotivoFueraServicio con comentario: {comentario}, motivoTipo: {motivo}')
-                conn = sqlite3.connect('MODULES/database.db')
+                conn = sqlite3.connect('DATABASE/database.db')
                 cursor = conn.cursor()
                 cursor.execute('''
                     INSERT INTO MotivosFueraServicio(fechaInicio, comentario, descripcion) VALUES(?,?,?)''',(fechaActual, comentario, motivo))

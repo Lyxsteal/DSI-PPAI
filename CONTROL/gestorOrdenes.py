@@ -14,6 +14,7 @@ from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
 from MODULES.cambioEstado import CambioEstado
 from tkinter import messagebox
+from DATABASE.estadoCBD import estadoConsulta
 
 class GestorOrdenDeInspeccion:
     def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivos = None, estado:Optional[Estado] = None, 
@@ -51,7 +52,7 @@ class GestorOrdenDeInspeccion:
         return self.sesion.obtenerEmpleadoLogeado()
         
     def buscarOrdenesDeInspeccion(self):
-        db_path = os.path.join(os.path.dirname(__file__), '../MODULES/database.db')
+        db_path = os.path.join(os.path.dirname(__file__), '../DATABASE/database.db')
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute('''
@@ -97,7 +98,7 @@ class GestorOrdenDeInspeccion:
         return observacion
     def buscarMotivoTiposFueraServicio(self):
         lista_motivos = []
-        conn = sqlite3.connect('MODULES/database.db')
+        conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute('''
             SELECT descripcion FROM MotivosTipo
@@ -159,31 +160,42 @@ class GestorOrdenDeInspeccion:
         else:
             return motivosSeleccionados
     def buscarEstadoCerrada(self):
-        self.estado = Estado()
-        self.ambitoOI = self.estado.sosAmbito(ambito='Orden Inspeccion')
-        if self.ambitoOI is None:
+        estados = estadoConsulta()
+        for estado in estados:
+            nombreEstado, ambito, idEstado = estado
+            self.estado = Estado(idEstado, ambito, nombreEstado)
+            self.ambitoOI = self.estado.sosAmbitoOrdenInspeccion()
+        if self.ambitoOI is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Orden Inspeccion'.")
             exit()
-        self.idCerrada = self.estado.sosEstado(nombre='Cerrada')
-        print("ID Cerrada:", self.idCerrada)  # Debugging line
-        if self.idCerrada is not None:
-            self.getFechaHoraActual()
+        for estado in estados:
+            nombreEstado, ambito, idEstado = estado
+            self.estado = Estado(idEstado, ambito, nombreEstado)
+            self.idCerrada = self.estado.sosCerrada()
+        if self.idCerrada is True:
+            self.getFechaHoraActual(estados)
         else:
             messagebox.showerror("Error", "No se pudo encontrar el estado 'Cerrada'.")
             exit()
 
     
-    def getFechaHoraActual(self):
+    def getFechaHoraActual(self, estados):
         self.fechaActual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.buscarFueraDeServicio()
+        self.buscarFueraDeServicio(estados)
 
-    def buscarFueraDeServicio(self):
-        self.ambitoSismografo = self.estado.sosAmbito(ambito='Sismografo')
-        if self.ambitoSismografo is None:
+    def buscarFueraDeServicio(self, estados):
+        for estado in estados:
+            nombreEstado, ambito, idEstado = estado
+            self.estado = Estado(idEstado, ambito, nombreEstado)
+            self.ambitoSis = self.estado.sosAmbitoSismografo()
+        if self.ambitoSis is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Sismografo'.")
             exit()
-        self.idFDS = self.estado.sosEstado(nombre='Fuera de Servicio')
-        if self.idFDS is not None:
+        for estado in estados:
+            nombreEstado, ambito, idEstado = estado
+            self.estado = Estado(nombreEstado, ambito, idEstado)
+            self.idFDS = self.estado.sosFueraDeServicio()
+        if self.idFDS is True:
             self.cerrarOrdenInspeccion(self.fechaActual, self.idFDS, self.idCerrada, self.observacionCierre, self.ordenSeleccionada, self.comentarios, self.motivosSeleccionados)
         else:
             messagebox.showerror("Error", "No se pudo encontrar el estado 'Fuera de Servicio'.")
@@ -197,7 +209,7 @@ class GestorOrdenDeInspeccion:
         self.ordenSeleccionada.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
 
     def buscarResponsablesReparacion(self):
-        conn = sqlite3.connect('MODULES/database.db')
+        conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute("SELECT nombre FROM Empleados")
         self.mails_responsables = []

@@ -20,7 +20,7 @@ class Usuario:
         #print('metodo llamado')
         empleado_nombre = None
         nombre= self.getNombre()
-        conn = sqlite3.connect('MODULES/database.db')
+        conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute('''SELECT empleado FROM Usuario WHERE nombre = ?''', (nombre,))
         empleado = cursor.fetchone()

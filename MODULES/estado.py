@@ -1,9 +1,9 @@
 import sqlite3
 class Estado:
-    def __init__(self, idEstado=None, nombre=None, ambito=None):
+    def __init__(self, idEstado=None, ambito=None, nombre=None):
         self.__idEstado = idEstado
-        self.__nombre = nombre
         self.__ambito = ambito
+        self.__nombre = nombre
 
     def sosCompletamenteRealizada(self):
         return self.__nombre == "Completamente Realizada"
@@ -15,6 +15,7 @@ class Estado:
     def getAmbito(self):
         return self.__ambito
     def sosAmbitoSismografo(self):
+        print(self.__ambito)
         if self.__ambito == "Sismografo":
             return True
         else:
@@ -24,24 +25,13 @@ class Estado:
             return True
         else:
             return False
-    def sosAmbito(self, ambito):
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Estados WHERE ambito = ?", (ambito,))
-        ambitoOrdenInspeccion = cursor.fetchall()
-        conn.close()
-        return ambitoOrdenInspeccion if ambitoOrdenInspeccion else None
-    def sosEstado(self, nombre):
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", (nombre,))
-        estadoCerrada = cursor.fetchone()
-        conn.close()
-        return estadoCerrada[0] if estadoCerrada else None
-    def sosFueradeServicio(self, nombre):
-        conn = sqlite3.connect('MODULES/database.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = ?", (nombre,))
-        estadoFDS = cursor.fetchone()
-        conn.close()
-        return estadoFDS[0] if estadoFDS else None
+    def sosCerrada(self):
+        if self.__nombre == "Cerrada":
+            return True
+        else:
+            return False
+    def sosFueraDeServicio(self):
+        if self.__nombre == "Fuera de Servicio":
+            return True
+        else:
+            return False    

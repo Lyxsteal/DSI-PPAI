@@ -12,7 +12,7 @@ class GestorIS:
 
     #Funcion que obtiene los usuarios de la base de datos (mover a usuario.py)
     def obtenerUsuario(self):
-        conn = sqlite3.connect('MODULES/database.db')
+        conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute('''
             SELECT nombre, contraseña
@@ -31,7 +31,7 @@ class GestorIS:
             nombre = usuario[0]
             contraseña = usuario[1]
             if nombre == nombre_usuario and contraseña == contraseña_iniciada:
-                conn = sqlite3.connect('MODULES/database.db')
+                conn = sqlite3.connect('DATABASE/database.db')
                 cursor = conn.cursor()
                 cursor.execute('''
                     INSERT INTO Sesion (fechaInicio, usuario)

@@ -64,7 +64,7 @@ class OrdenInspeccion:
         tiempoActual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return tiempoActual
     def setEstadoCierre(self, idEstado, fechaCierre, observacionCierre, ordenSeleccionada):
-        conn = sqlite3.connect('MODULES/database.db')
+        conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute('''
             UPDATE OrdenesInspeccion
