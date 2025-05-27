@@ -26,13 +26,9 @@ class Pantalla():
     def obtener_datos(self):
         nombre_usuario = self.insertar_usuario.get()
         contraseña_iniciada = self.insertar_contraseña.get()
-        print("Nombre de usuario:", nombre_usuario)
-        print("Contraseña:", contraseña_iniciada)
-        #No me deberia servir porqe existe sesion abajo
-        #sesionActual = Sesion(Usuario(nombre_usuario, contraseña_iniciada))
         self.gestor = GestorIS()
         sesion, mensaje = self.gestor.iniciarSesion(nombre_usuario, contraseña_iniciada)
-        print(mensaje)
+        #print(mensaje)
         if sesion:
             pantallaOPI = PantallaOrdenInspeccion(sesion = sesion)
             self.sesion = sesion 

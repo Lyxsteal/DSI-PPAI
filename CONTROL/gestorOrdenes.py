@@ -38,7 +38,7 @@ class GestorOrdenDeInspeccion:
     def iniciarCierreOrdenInspeccion(self):
         print('Inicio el Cierre de Orden Inspeccion')
         self.empleado = self.buscarEmpleadoLogueado()
-        print('Empleado logueado: ' + self.empleado)  # <--- Cambiado aquí
+        print('Empleado logueado: ' + self.empleado) 
         ordenes = self.buscarOrdenesDeInspeccion()
         ordenes_ordenadas = self.ordenaPorFechaFinalizacion(ordenes)
         self.ordenes = ordenes_ordenadas  
