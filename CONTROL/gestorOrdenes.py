@@ -22,8 +22,8 @@ class GestorOrdenDeInspeccion:
         self.empleado = empleado
         self.motivos = motivos
         self.estado = estado
-        self.pantallaCCRS = pantallaCCRS
-        self.interfaz = interfaz
+        self.pantallaCCRS = PantallaCCRS()
+        self.interfaz = InterfazNotificacionEmail()
         self.ordenes = ordenes
         self.fechaActual = fechaActual
         self.ordenSeleccionada = ordenSeleccionada
@@ -195,18 +195,24 @@ class GestorOrdenDeInspeccion:
 
     def ponerSismografoFueraEstado(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
         self.ordenSeleccionada.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
+
     def buscarResponsablesReparacion(self):
-        """Ejemplo: Busca responsables de reparación (puedes adaptar según tu modelo)."""
         conn = sqlite3.connect('MODULES/database.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT email FROM Empleados WHERE rol = ?", ('Responsable Reparación',))
-        responsables = [row[0] for row in cursor.fetchall()]
+        cursor.execute("SELECT nombre FROM Empleados")
+        self.mails_responsables = []
+        for row in cursor.fetchall():
+            empleado = Empleado(row[0])
+            if empleado.esResponsableReparacion():
+                self.mails_responsables.append(empleado.obtenerMail())
         conn.close()
-        return responsables
 
     def enviarMails(self):
         # Simula envío
+        # Teniendo los mails en self.mails_responsables
         print("Enviando email de notificación...")
+        self.interfaz.enviarNotificacion()
+        self.pantallaCCRS.publicarNotificacion()
 
     def finCU(self):
         print('Fin Caso de Uso')
