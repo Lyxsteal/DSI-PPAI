@@ -112,7 +112,7 @@ class PantallaOrdenInspeccion:
     def mostrarOrdCompletamenteRealizadas(self, ordenes_ordenadas):
         lista_visual = []
         for orden in ordenes_ordenadas:
-            texto = f"N°: {orden.getNroOrden()} | Fin: {orden.getfechaHoraFinalizacion()} | Estación: {orden.getNombreEstacion()} | Sismógrafo: {orden.getIdentificadorSismografo()}"
+            texto = f"N°: {orden[0]} | Fin: {orden[1]} | Estación: {orden[2]} | Sismógrafo: {orden[3]}"
             lista_visual.append(texto)
         print("Lista visual para combobox:", lista_visual)
         return lista_visual

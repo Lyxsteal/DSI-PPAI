@@ -49,21 +49,22 @@ class GestorOrdenDeInspeccion:
         ordenes = buscarOrdenesInspeccion()
         ordenesFiltro = []
         for orden in ordenes:
-            numeroOrden, fechaHoraCierre, fechaHoraFinalizacion, fechaHoraInicio, observacion, nombreEmpleado, idEstado, codigoES, nombreEstado = orden
+            numeroOrden, fechaHoraCierre, fechaHoraFinalizacion, fechaHoraInicio, observacion, nombreEmpleado, idEstado, codigoES, nombreEstado, nombreES, idSismografo = orden
             self.ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio=None, fechaHoraCierre=None, fechaHoraFinalizacion=fechaHoraFinalizacion, observacionCierre=None,
-                                               empleado=Empleado(nombreEmpleado), estado=Estado(idEstado=idEstado, nombre=nombreEstado), estacion=EstacionSismologica(codigoES,sismografo=Sismografo(codigoES,cambioEstado=CambioEstado())))
+                                               empleado=Empleado(nombreEmpleado), estado=Estado(idEstado=idEstado, nombre=nombreEstado), estacion=EstacionSismologica(codigoES,nombre= nombreES, sismografo=Sismografo(codigoES,identificadorSismografo=idSismografo,cambioEstado=CambioEstado())))
             if self.ordenInspeccion.sosDeEmpleado(empleado_actual) is True:
                 print('Entro aqui')
                 if self.ordenInspeccion.sosCompletamenteRealizada() is True:
                     print('Entro aqui x2')
                     nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo = self.ordenInspeccion.obtenerDatos()
-                    ordenesFiltro.append(orden)
+                    ordenesFiltro.append([nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo])
+        print(ordenesFiltro)
         self.ordenaPorFechaFinalizacion(ordenesFiltro)
-        return ordenesFiltro
     
     def ordenaPorFechaFinalizacion(self, ordenes):
-        ordenesOrdenadas = sorted(ordenes, key=lambda o: datetime.strptime(o.getfechaHoraFinalizacion(), "%Y-%m-%d %H:%M:%S"))
-        return ordenesOrdenadas
+        ordenesOrdenadas = sorted(ordenes, key=lambda o: datetime.strptime(o[1], "%Y-%m-%d %H:%M:%S"))
+        self.ordenes = ordenesOrdenadas
+        return self.ordenes
     
     def tomarOrdenInspeccionSeleccionada(self, orden):
         self.ordenSeleccionada = orden
@@ -145,6 +146,8 @@ class GestorOrdenDeInspeccion:
             nombreEstado, ambito, idEstado = estado
             self.estado = Estado(idEstado, ambito, nombreEstado)
             self.ambitoOI = self.estado.sosAmbitoOrdenInspeccion()
+            if self.ambitoOI is True:
+                break
         if self.ambitoOI is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Orden Inspeccion'.")
             exit()
@@ -152,8 +155,9 @@ class GestorOrdenDeInspeccion:
             nombreEstado, ambito, idEstado = estado
             self.estado = Estado(idEstado, ambito, nombreEstado)
             self.idCerrada = self.estado.sosCerrada()
-        if self.idCerrada is True:
-            self.getFechaHoraActual(estados)
+            if self.idCerrada is True:
+                self.getFechaHoraActual(estados)
+                break
         else:
             messagebox.showerror("Error", "No se pudo encontrar el estado 'Cerrada'.")
             exit()
@@ -168,16 +172,19 @@ class GestorOrdenDeInspeccion:
             nombreEstado, ambito, idEstado = estado
             self.estado = Estado(idEstado, ambito, nombreEstado)
             self.ambitoSis = self.estado.sosAmbitoSismografo()
+            if self.ambitoSis == True:
+                break
         if self.ambitoSis is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Sismografo'.")
             exit()
         for estado in estados:
             nombreEstado, ambito, idEstado = estado
-            self.estado = Estado(nombreEstado, ambito, idEstado)
+            self.estado = Estado(idEstado, ambito, nombreEstado)
             self.idFDS = self.estado.sosFueraDeServicio()
-        if self.idFDS is True:
-            self.cerrarOrdenInspeccion(self.fechaActual, self.idFDS, self.idCerrada, self.observacionCierre, self.ordenSeleccionada, self.comentarios, self.motivosSeleccionados)
-        else:
+            if self.idFDS is True:
+                self.cerrarOrdenInspeccion(self.fechaActual, self.idFDS, self.idCerrada, self.observacionCierre, self.ordenSeleccionada, self.comentarios, self.motivosSeleccionados)
+                break
+        if self.idFDS is False:
             messagebox.showerror("Error", "No se pudo encontrar el estado 'Fuera de Servicio'.")
             exit()
 
