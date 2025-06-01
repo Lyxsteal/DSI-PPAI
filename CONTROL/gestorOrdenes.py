@@ -16,6 +16,7 @@ from MODULES.cambioEstado import CambioEstado
 from tkinter import messagebox
 from DATABASE.estadoCBD import estadoConsulta
 from DATABASE.ordenesCBD import buscarOrdenesInspeccion
+from DATABASE.motivoTipoCBD import obtenerMotivoTipo
 
 class GestorOrdenDeInspeccion:
     def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivos = None, estado:Optional[Estado] = None, 
@@ -59,9 +60,9 @@ class GestorOrdenDeInspeccion:
                     nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo = self.ordenInspeccion.obtenerDatos()
                     ordenesFiltro.append([nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo])
         print(ordenesFiltro)
-        self.ordenaPorFechaFinalizacion(ordenesFiltro)
+        self.ordenarPorFechaFinalizacion(ordenesFiltro)
     
-    def ordenaPorFechaFinalizacion(self, ordenes):
+    def ordenarPorFechaFinalizacion(self, ordenes):
         ordenesOrdenadas = sorted(ordenes, key=lambda o: datetime.strptime(o[1], "%Y-%m-%d %H:%M:%S"))
         self.ordenes = ordenesOrdenadas
         return self.ordenes
@@ -79,13 +80,7 @@ class GestorOrdenDeInspeccion:
     
     def buscarMotivoTiposFueraServicio(self):
         lista_motivos = []
-        conn = sqlite3.connect('DATABASE/database.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT descripcion FROM MotivosTipo
-        ''')
-        motivos = cursor.fetchall()
-        conn.close()
+        motivos = obtenerMotivoTipo()
         for i in motivos:
             descripcion = i
             motivo = MotivoTipo(descripcion)
@@ -99,6 +94,7 @@ class GestorOrdenDeInspeccion:
     def tomarMotivoTipoFueraServicio(self, motivos):
         self.motivosSeleccionados = motivos
         return motivos
+    
     def pedirComentario(self):
         pass
 
