@@ -1,7 +1,7 @@
 from MODULES.cambioEstado import CambioEstado
 import sqlite3
 class Sismografo:
-    def __init__(self, codigoEstacion, identificadorSismografo, fechaAdquisicion=None, nroSerie=None, cambioEstado:CambioEstado= None):
+    def __init__(self, codigoEstacion, identificadorSismografo=None, fechaAdquisicion=None, nroSerie=None, cambioEstado:CambioEstado= None):
         self.__codigoEstacion = codigoEstacion
         self.__identificadorSismografo = identificadorSismografo
         self.__fechaAdquisicion = fechaAdquisicion

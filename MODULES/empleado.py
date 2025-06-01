@@ -20,3 +20,8 @@ class Empleado:
     
     def obtenerMail(self):
         return self.mail
+    def sosDeEmpleado(empleado_actual):
+        if self.nombre == empleado_actual:
+            return True
+        else:
+            return False

@@ -24,8 +24,10 @@ class Pantalla():
     # IMPORTANTE : Cambiar para que tome los datos de la ventana y no los temporales para testing 
     # Funcion para obtener los datos de la ventana cuando apretas el boton  
     def obtener_datos(self):
-        nombre_usuario = self.insertar_usuario.get()
-        contraseña_iniciada = self.insertar_contraseña.get()
+        #nombre_usuario = self.insertar_usuario.get()
+        #contraseña_iniciada = self.insertar_contraseña.get()
+        nombre_usuario = 'lrodriguez'
+        contraseña_iniciada = 'luisito123'
         self.gestor = GestorIS()
         sesion, mensaje = self.gestor.iniciarSesion(nombre_usuario, contraseña_iniciada)
         #print(mensaje)

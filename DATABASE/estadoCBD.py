@@ -6,3 +6,10 @@ def estadoConsulta():
     estados = cursor.fetchall()
     conn.close()
     return estados if estados else None
+def idCompletamenteRealizada():
+    conn = sqlite3.connect('DATABASE/database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT idEstado FROM Estados WHERE nombreEstado = 'Completamente Realizada'")
+    idEstadoCR = cursor.fetchall()
+    conn.close()
+    return idEstadoCR

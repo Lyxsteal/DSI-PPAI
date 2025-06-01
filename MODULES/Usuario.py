@@ -1,4 +1,5 @@
 from MODULES.empleado import Empleado
+from DATABASE.empleadoCBD import obtenerEmpleado
 import sqlite3
 class Usuario:
     def __init__(self, nombre, contraseña=None, empleado:Empleado=None):
@@ -17,17 +18,7 @@ class Usuario:
         return empleado_nombre
     
     def obtenerEmpleado(self):
-        #print('metodo llamado')
-        empleado_nombre = None
-        nombre= self.getNombre()
-        conn = sqlite3.connect('DATABASE/database.db')
-        cursor = conn.cursor()
-        cursor.execute('''SELECT empleado FROM Usuario WHERE nombre = ?''', (nombre,))
-        empleado = cursor.fetchone()
-        empleado_nombre = empleado[0]
-        #print(empleado_nombre)
-        conn.commit()
-        conn.close()
-        return empleado_nombre
+        self.empleado = obtenerEmpleado(self.nombre)
+        return self.empleado
     def getNombre(self):
         return self.nombre

@@ -28,9 +28,7 @@ class OrdenInspeccion:
         self.__estacionSismo         = estacion
 
     def sosCompletamenteRealizada(self):
-        if self.__estado is not None:
-            return self.__estado.sosCompletamenteRealizada()
-        return False
+        return self.__estado.sosCompletamenteRealizada()
     
     def obtenerDatos(self):
         nroOrden = self.getNroOrden()

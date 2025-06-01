@@ -15,6 +15,7 @@ from MODULES.sismografos import Sismografo
 from MODULES.cambioEstado import CambioEstado
 from tkinter import messagebox
 from DATABASE.estadoCBD import estadoConsulta
+from DATABASE.ordenesCBD import buscarOrdenesInspeccion
 
 class GestorOrdenDeInspeccion:
     def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivos = None, estado:Optional[Estado] = None, 
@@ -38,47 +39,25 @@ class GestorOrdenDeInspeccion:
 
     def iniciarCierreOrdenInspeccion(self):
         print('Inicio el Cierre de Orden Inspeccion')
-        self.empleado = self.buscarEmpleadoLogueado()
-        print('Empleado logueado: ' + self.empleado) 
-        ordenes = self.buscarOrdenesDeInspeccion()
-        ordenes_ordenadas = self.ordenaPorFechaFinalizacion(ordenes)
-        self.ordenes = ordenes_ordenadas  
-        print('Existen ' + str(len(ordenes_ordenadas)) + ' ordenes con este empleado que están en estado completamente realizadas')
-        print('Son las siguientes:')
-        for i in ordenes_ordenadas:
-            print(i.getNroOrden())
+        self.buscarEmpleadoLogueado()
 
     def buscarEmpleadoLogueado(self):
-        return self.sesion.obtenerEmpleadoLogeado()
+        empleado_actual = self.sesion.obtenerEmpleadoLogeado()
+        self.buscarOrdenesDeInspeccion(empleado_actual)
         
-    def buscarOrdenesDeInspeccion(self):
-        db_path = os.path.join(os.path.dirname(__file__), '../DATABASE/database.db')
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT o.numeroOrden, o.fechaHoraFinalizacion,  
-                o.nombreEmpleado, o.idEstado, o.codigoES, e.nombreEstado, es.nombre, s.identificadorSismografo
-            FROM OrdenesInspeccion o
-            JOIN Empleados em ON o.nombreEmpleado = em.nombre
-            JOIN Estados e ON o.idEstado = e.idEstado
-            JOIN EstacionesSismologicas es ON o.codigoES = es.codigo
-            JOIN Sismografos s ON o.codigoES = s.codigoEstacion
-        ''')
-        ordenes = cursor.fetchall()
-        conn.close()
-
+    def buscarOrdenesDeInspeccion(self, empleado_actual):
+        ordenes = buscarOrdenesInspeccion()
         ordenesFiltro = []
         for orden in ordenes:
-            numeroOrden, fechaHoraFinalizacion, nombreEmpleado, idEstado, codigoES, nombreEstado, nombre, identificadorSismografo = orden
-            cambioEstado = CambioEstado()
-            estado = Estado(idEstado, nombreEstado)
-            sismografo = Sismografo(codigoES, identificadorSismografo)
-            sismografo.setCambioEstado(cambioEstado)
-            estacion = EstacionSismologica(codigoES, nombre, sismografo=sismografo)
-            ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio=None, fechaHoraCierre=None, fechaHoraFinalizacion=fechaHoraFinalizacion, observacionCierre=None, empleado=Empleado(nombreEmpleado), estado=Estado(nombre=nombreEstado), estacion=estacion)
-            if self.empleado is not None and ordenInspeccion.sosCompletamenteRealizada() and ordenInspeccion.sosDeEmpleado(self.empleado):
-                    numeroOrden, fechaHoraFinalizacion, nombreEstacion, identificadorSismografo = ordenInspeccion.obtenerDatos()
-                    ordenesFiltro.append(ordenInspeccion)
+            numeroOrden, fechaHoraCierre, fechaHoraFinalizacion, fechaHoraInicio, observacion, nombreEmpleado, idEstado, codigoES, nombreEstado = orden
+            self.ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio=None, fechaHoraCierre=None, fechaHoraFinalizacion=fechaHoraFinalizacion, observacionCierre=None,
+                                               empleado=Empleado(nombreEmpleado), estado=Estado(idEstado=idEstado, nombre=nombreEstado), estacion=EstacionSismologica(codigoES,sismografo=Sismografo(codigoES,cambioEstado=CambioEstado())))
+            if self.ordenInspeccion.sosDeEmpleado(empleado_actual) is True:
+                print('Entro aqui')
+                if self.ordenInspeccion.sosCompletamenteRealizada() is True:
+                    print('Entro aqui x2')
+                    nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo = self.ordenInspeccion.obtenerDatos()
+                    ordenesFiltro.append(orden)
         self.ordenaPorFechaFinalizacion(ordenesFiltro)
         return ordenesFiltro
     
@@ -96,6 +75,7 @@ class GestorOrdenDeInspeccion:
     def tomarObservacionCierreOrden(self, observacion):
         self.observacionCierre = observacion
         return observacion
+    
     def buscarMotivoTiposFueraServicio(self):
         lista_motivos = []
         conn = sqlite3.connect('DATABASE/database.db')

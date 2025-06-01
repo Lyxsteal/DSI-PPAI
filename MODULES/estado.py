@@ -6,7 +6,10 @@ class Estado:
         self.__nombre = nombre
 
     def sosCompletamenteRealizada(self):
-        return self.__nombre == "Completamente Realizada"
+        if self.__nombre == "Completamente Realizada":
+            return True
+        else:
+            return False
 
     def getIdEstado(self):
         return self.__idEstado
