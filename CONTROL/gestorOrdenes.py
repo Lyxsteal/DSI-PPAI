@@ -50,20 +50,18 @@ class GestorOrdenDeInspeccion:
         self.buscarOrdenesDeInspeccion(empleado_actual)
         
     def buscarOrdenesDeInspeccion(self, empleado_actual):
-        ordenes = buscarOrdenesInspeccion()
+        ordenes_objetos = buscarOrdenesInspeccion()
         ordenesFiltroDatos = []
         ordenesFiltroObjetos = []
-        for orden in ordenes:
-            numeroOrden, fechaHoraCierre, fechaHoraFinalizacion, fechaHoraInicio, observacion, nombreEmpleado, idEstado, codigoES, nombreEstado, nombreES, idSismografo = orden
-            self.ordenInspeccion = OrdenInspeccion(numeroOrden, fechaHoraInicio=None, fechaHoraCierre=None, fechaHoraFinalizacion=fechaHoraFinalizacion, observacionCierre=None,
-                                               empleado=Empleado(nombreEmpleado), estado=Estado(idEstado=idEstado, nombre=nombreEstado), estacion=EstacionSismologica(codigoES,nombre= nombreES, sismografo=Sismografo(codigoES,identificadorSismografo=idSismografo,cambioEstado=CambioEstado())))
+        for orden in ordenes_objetos:
+            self.ordenInspeccion = orden 
             if self.ordenInspeccion.sosDeEmpleado(empleado_actual) is True and self.ordenInspeccion.sosCompletamenteRealizada() is True:
                     nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo = self.ordenInspeccion.obtenerDatos()
                     ordenesFiltroDatos.append([nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo])
-                    ordenesFiltroObjetos.append(self.ordenInspeccion)
+                    ordenesFiltroObjetos.append(orden)
                     self.diccOrdenesInspeccion[nroOrden] = self.ordenInspeccion
         print(self.diccOrdenesInspeccion)
-        self.ordenaPorFechaFinalizacion(ordenesFiltroDatos)
+        self.ordenarPorFechaFinalizacion(ordenesFiltroDatos)
     
     def ordenarPorFechaFinalizacion(self, ordenes):
         ordenesOrdenadas = sorted(ordenes, key=lambda o: datetime.strptime(o[1], "%Y-%m-%d %H:%M:%S"))
@@ -83,10 +81,9 @@ class GestorOrdenDeInspeccion:
     
     def buscarMotivoTiposFueraServicio(self):
         lista_motivos = []
-        motivos = obtenerMotivoTipo()
-        for i in motivos:
-            descripcion = i
-            motivo = MotivoTipo(descripcion)
+        motivos_objetos = obtenerMotivoTipo()
+        for motivo in motivos_objetos:
+            self.motivos = motivo
             motivo.getDescripcion()
             lista_motivos.append(motivo)
         return lista_motivos
@@ -132,53 +129,51 @@ class GestorOrdenDeInspeccion:
         else:
             return observacion
 
-    def validarExistenciaMotivoSeleccionado(self, motivos):
+    def validarExistenciaMotivoSeleccionado(self):
         motivosSeleccionados = motivos
         if len(motivosSeleccionados) == 0:
             messagebox.showerror("Error", "Debe seleccionar al menos un motivo.")
             return 
         else:
             return motivosSeleccionados
+        
     def buscarEstadoCerrada(self):
-        estados = estadoConsulta()
-        for estado in estados:
-            nombreEstado, ambito, idEstado = estado
-            self.estado = Estado(idEstado, ambito, nombreEstado)
+        estados_objetos = estadoConsulta()
+        for estado in estados_objetos:
+            self.estado = estado
             self.ambitoOI = self.estado.sosAmbitoOrdenInspeccion()
             if self.ambitoOI is True:
                 break
         if self.ambitoOI is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Orden Inspeccion'.")
             exit()
-        for estado in estados:
-            nombreEstado, ambito, idEstado = estado
-            self.estado = Estado(idEstado, ambito, nombreEstado)
+        for estado in estados_objetos:
+            self.estado = estado
             self.existeCerrada, self.idCerrada = self.estado.sosCerrada()
             if self.existeCerrada is True:
-                self.getFechaHoraActual(estados)
+                self.getFechaHoraActual(estados_objetos)
                 break
         else:
             messagebox.showerror("Error", "No se pudo encontrar el estado 'Cerrada'.")
             exit()
 
     
-    def getFechaHoraActual(self, estados):
+    def getFechaHoraActual(self, estados_objetos):
         self.fechaActual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.buscarFueraDeServicio(estados)
+        self.buscarFueraDeServicio(estados_objetos)
 
-    def buscarFueraDeServicio(self, estados):
-        for estado in estados:
-            nombreEstado, ambito, idEstado = estado
-            self.estado = Estado(idEstado, ambito, nombreEstado)
+    def buscarFueraDeServicio(self):
+        estado_objetos = estadoConsulta()
+        for estado in estado_objetos:
+            self.estado = estado
             self.ambitoSis = self.estado.sosAmbitoSismografo()
-            if self.ambitoSis == True:
+            if self.ambitoSis is True:
                 break
         if self.ambitoSis is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Sismografo'.")
             exit()
-        for estado in estados:
-            nombreEstado, ambito, idEstado = estado
-            self.estado = Estado(idEstado, ambito, nombreEstado)
+        for estado in estado_objetos:
+            self.estado = estado 
             self.idFDS = self.estado.sosFueraDeServicio()
             if self.idFDS is True:
                 break
@@ -197,21 +192,25 @@ class GestorOrdenDeInspeccion:
         self.ordenSeleccionada.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
 
     def buscarResponsablesReparacion(self):
-        empleadoTodos = obtenerEmpleadosTodos()
+        empleadoTodos_objetos = obtenerEmpleadosTodos()
         self.mails_responsables = []
-        for e in empleadoTodos:
-            em = Empleado(nombre=e.nombre, apellido=e.apellido, mail=e.mail, telefono=e.telefono, idEmpleado=e.idEmpleado)
-            if em.esResponsableReparacion(e) is True:
-                self.mails_responsables.append(e.obtenerMail())
-        self.enviarMails()
+        for empleado in empleadoTodos_objetos:
+            self.empleado = empleado
+            if empleado.esResponsableReparacion() is True:
+                self.mails_responsables.append(empleado.obtenerMail())
+        self.enviarMails(self.mails_responsables)
 
 
-    def enviarMails(self):
+    def enviarMails(self, mails_responsables):
         # Simula envío
         # Teniendo los mails en self.mails_responsables
-        print("Enviando email de notificación...")
+        for empleado in mails_responsables:
+            print("Enviando email de notificación...")
         self.interfaz.enviarNotificacion()
         self.pantallaCCRS.publicarNotificacion()
 
     def finCU(self):
         print('Fin Caso de Uso')
+
+    def buscarOrdenes(self):
+        return self.ordenes

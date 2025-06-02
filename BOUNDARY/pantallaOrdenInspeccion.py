@@ -59,7 +59,7 @@ class PantallaOrdenInspeccion:
 
         tk.Label(frame, text="Seleccione una orden:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(anchor="w")
 
-        self.ordenes_completas = self.gestor.ordenes
+        self.ordenes_completas = self.gestor.buscarOrdenes()
         lista_visual = self.mostrarOrdCompletamenteRealizadas(self.ordenes_completas)
         self.ordenSeleccionada = tk.StringVar()
         self.ordenes_combo = ttk.Combobox(frame, values=lista_visual, textvariable=self.ordenSeleccionada, state="readonly")

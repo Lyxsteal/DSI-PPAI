@@ -1,7 +1,8 @@
 import sqlite3
 from datetime import datetime
+from MODULES.cambioEstado import CambioEstado
 def getCambiosEstado(idSismografo):
-        cambiosEstado = []
+        cambiosEstado_objetos = []
         conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
         cursor.execute('''
@@ -10,7 +11,10 @@ def getCambiosEstado(idSismografo):
         conn.close()
         if cambiosEstado is None:
             print(f"No se encontró cambio de estado para el sismografo seleccionado")
-        return cambiosEstado
+        for cambio in cambiosEstado:
+            fechaHoraInicio, fechaHoraFin, idSismografo, idEstado = cambio
+            cambiosEstado_objetos.append(CambioEstado(fechaHoraInicio, fechaHoraFin, idSismografo, idEstado))
+        return cambiosEstado_objetos
 def setFechaHoraFin(tiempoFin, idSismografo, fechaHoraInicio):
         conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()

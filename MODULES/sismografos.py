@@ -12,10 +12,11 @@ class Sismografo:
 
     def getIdentificadorSismografo(self):
         return self.__identificadorSismografo
+    
     def fueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
         print('el sismografo:', self.__identificadorSismografo)
-        cambiosEstado = getCambiosEstado(self.__identificadorSismografo)
-        for cambio in cambiosEstado:
+        cambiosEstado_objetos = getCambiosEstado(self.__identificadorSismografo)
+        for cambio in cambiosEstado_objetos:
             fechaHoraInicio, fechaHoraFin, idSismografo, idEstado = cambio
             cambioEstado = CambioEstado(fechaHoraInicio, fechaHoraFin, idSismografo, idEstado)
             if cambioEstado.esEstadoActual() == True:
@@ -26,6 +27,7 @@ class Sismografo:
             print('No se encontró cambio de estado actual para el sismografo: ', self.__identificadorSismografo)
             exit()
         self.cambiarEstadoFueraServicio(idEstadoFdS, fechaActual, self.__identificadorSismografo, comentario, motivoTipo)
+
     def cambiarEstadoFueraServicio(self, idEstadoFdS, fechaActual, identificadorSismografo, comentario, motivoTipo):
         insertCambioEstado(fechaActual, identificadorSismografo, idEstadoFdS)
         self.__cambioEstado = CambioEstado(fechaHoraInicio= fechaActual, fechaHoraFin= None, idEstado= Estado(idEstado=idEstadoFdS), idSismografo= identificadorSismografo, comentario= comentario, motivoTipo = motivoTipo)

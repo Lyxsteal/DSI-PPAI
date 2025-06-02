@@ -1,6 +1,10 @@
 class Rol:
-    def __init__(self, rol):
-        self.nombre = rol
+    def __init__(self, descripcion, rol):
+        self.__descripcion = descripcion
+        self.__nombre = rol
 
     def esResponsableReparacion(self):
-        return self.nombre == "Responsable de Reparación"
+        if self.__nombre == "Responsable de Reparación":
+            return True
+        else:
+            return False
