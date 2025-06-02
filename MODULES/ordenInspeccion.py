@@ -63,7 +63,7 @@ class OrdenInspeccion:
         tiempoActual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return tiempoActual
     def setEstadoCierre(self, idEstado, fechaCierre, observacionCierre, ordenSeleccionada):
-        print(ordenSeleccionada)
+        print(idEstado, fechaCierre, observacionCierre)
         setEstadoCierre(fechaCierre,observacionCierre,idEstado, ordenSeleccionada.getNroOrden())
         print(f"Orden {ordenSeleccionada.getNroOrden()} cerrada correctamente.")
     def ponerSismografoFueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
