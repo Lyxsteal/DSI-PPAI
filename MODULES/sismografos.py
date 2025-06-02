@@ -1,4 +1,6 @@
 from MODULES.cambioEstado import CambioEstado
+from DATABASE.cambioestadoCBD import getCambiosEstado, insertCambioEstado
+from MODULES.estado import Estado
 import sqlite3
 class Sismografo:
     def __init__(self, codigoEstacion, identificadorSismografo=None, fechaAdquisicion=None, nroSerie=None, cambioEstado:CambioEstado= None):
@@ -10,20 +12,21 @@ class Sismografo:
 
     def getIdentificadorSismografo(self):
         return self.__identificadorSismografo
-    def setCambioEstado(self, cambioEstado):
-        self.__cambioEstado = cambioEstado
     def fueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
-        actualCE= self.__cambioEstado.esEstadoActual(self.__identificadorSismografo)
-        self.__cambioEstado.setFechaHoraFin(actualCE)
+        print('el sismografo:', self.__identificadorSismografo)
+        cambiosEstado = getCambiosEstado(self.__identificadorSismografo)
+        for cambio in cambiosEstado:
+            fechaHoraInicio, fechaHoraFin, idSismografo, idEstado = cambio
+            cambioEstado = CambioEstado(fechaHoraInicio, fechaHoraFin, idSismografo, idEstado)
+            if cambioEstado.esEstadoActual() == True:
+                print('id sismografo: ', cambioEstado.getIdSismografo)
+                cambioEstado.setFechaHoraFin(cambio)
+                break
+        else:
+            print('No se encontró cambio de estado actual para el sismografo: ', self.__identificadorSismografo)
+            exit()
         self.cambiarEstadoFueraServicio(idEstadoFdS, fechaActual, self.__identificadorSismografo, comentario, motivoTipo)
     def cambiarEstadoFueraServicio(self, idEstadoFdS, fechaActual, identificadorSismografo, comentario, motivoTipo):
-        try:
-            print(f"[DEBUG] Insertando CambioEstado con fecha: {fechaActual}, estado: {idEstadoFdS}, idSismografo: {identificadorSismografo}")
-            conn = sqlite3.connect('DATABASE/database.db')
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO CambiosEstado (fechaHoraInicio, fechaHoraFin, idSismografo, idEstado) VALUES(?,?,?,?)",(fechaActual, None, identificadorSismografo, idEstadoFdS))
-            conn.commit()
-            conn.close()
-            self.__cambioEstado = CambioEstado(fechaHoraInicio= fechaActual, fechaHoraFin= None, estado_obj= 2, idSismografo= identificadorSismografo, fechaActual= fechaActual, comentario= comentario, motivoTipo = motivoTipo)
-        except sqlite3.Error as e:
-            print(f"[ERROR] Falló el INSERT en CambiosEstado: {e}")
+        insertCambioEstado(fechaActual, identificadorSismografo, idEstadoFdS)
+        self.__cambioEstado = CambioEstado(fechaHoraInicio= fechaActual, fechaHoraFin= None, idEstado= Estado(idEstado=idEstadoFdS), idSismografo= identificadorSismografo, comentario= comentario, motivoTipo = motivoTipo)
+        

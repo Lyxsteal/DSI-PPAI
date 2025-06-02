@@ -30,9 +30,9 @@ class Estado:
             return False
     def sosCerrada(self):
         if self.__nombre == "Cerrada":
-            return True
+            return True, self.__idEstado
         else:
-            return False
+            return False, None
     def sosFueraDeServicio(self):
         if self.__nombre == "Fuera de Servicio":
             return True

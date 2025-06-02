@@ -155,11 +155,12 @@ class PantallaOrdenInspeccion:
         return True
 
     def tomarConfirmacionCierreOrden(self):
-        orden_obj = self.tomarOrdenInspeccionSeleccionada()
-        if orden_obj is None:
+        ordenSelec = self.tomarOrdenInspeccionSeleccionada()
+        if ordenSelec is None:
             return
         observacion = self.tomarObservacionCierreOrden()
         motivos = self.tomarMotivoTipoFueraServicio()
+
 
         # Nuevo: obtener comentarios por motivo
         comentarios_por_motivo = {}
@@ -170,7 +171,7 @@ class PantallaOrdenInspeccion:
                 return
             comentarios_por_motivo[motivo] = comentario
         self.gestor.tomarComentario(comentarios_por_motivo)
-        if not self.gestor.tomarConfirmacionCierreOrden(orden_obj, observacion, motivos):
+        if not self.gestor.tomarConfirmacionCierreOrden(ordenSelec, observacion, motivos):
             print("Validacion fallida, no se puede cerrar la orden.")
             return
         if not self.gestor.pedirConfirmacionCierreOrden():

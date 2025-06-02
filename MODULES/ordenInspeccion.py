@@ -4,6 +4,7 @@ from datetime import datetime
 import sqlite3
 from MODULES.empleado import Empleado
 from MODULES.estado import Estado
+from DATABASE.estadoCBD import setEstadoCierre
 # Import or define EstacionSismologica before using it
 # from .estacionSismologica import EstacionSismologica  # Uncomment and adjust if you have this module
 
@@ -62,15 +63,8 @@ class OrdenInspeccion:
         tiempoActual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return tiempoActual
     def setEstadoCierre(self, idEstado, fechaCierre, observacionCierre, ordenSeleccionada):
-        conn = sqlite3.connect('DATABASE/database.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            UPDATE OrdenesInspeccion
-            SET fechaHoraCierre = ?, observacionCierre = ?, idEstado = ?
-            WHERE numeroOrden = ?
-        ''', (fechaCierre, observacionCierre, idEstado, ordenSeleccionada.getNroOrden()))
-        conn.commit()
-        conn.close()
+        print(ordenSeleccionada)
+        setEstadoCierre(fechaCierre,observacionCierre,idEstado, ordenSeleccionada.getNroOrden())
         print(f"Orden {ordenSeleccionada.getNroOrden()} cerrada correctamente.")
     def ponerSismografoFueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
         self.__estacionSismo.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
