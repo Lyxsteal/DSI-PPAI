@@ -142,19 +142,9 @@ class PantallaOrdenInspeccion:
         return self.gestor.buscarMotivoTiposFueraServicio()
 
     def pedirSeleccionMotivoTipoFueraServicio(self):
-        motivos = self.tomarMotivoTipoFueraServicio()
-        if not motivos:
-            messagebox.showerror("Error", "Debe seleccionar al menos un motivo fuera de servicio.")
-            return False
-        for motivo in motivos:
-            comentario = self.comentarios_motivos[motivo].get() if motivo in self.comentarios_motivos else ""
-            if not comentario.strip():
-                messagebox.showerror("Error", f"Debe ingresar un comentario para el motivo '{motivo}'.")
-                return False
-        return True
+        return len(self.motivos_listbox.curselection()) > 0
 
     def tomarMotivoTipoFueraServicio(self):
-        self.pedirSeleccionMotivoTipoFueraServicio()
         return [self.motivos_listbox.get(i) for i in self.motivos_listbox.curselection()]
 
     def pedirComentario(self):
