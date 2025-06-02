@@ -17,6 +17,7 @@ from tkinter import messagebox
 from DATABASE.estadoCBD import estadoConsulta
 from DATABASE.ordenesCBD import buscarOrdenesInspeccion
 from DATABASE.motivoTipoCBD import obtenerMotivoTipo
+from DATABASE.empleadoCBD import obtenerEmpleadosTodos
 
 class GestorOrdenDeInspeccion:
     def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivos = None, estado:Optional[Estado] = None, 
@@ -192,15 +193,14 @@ class GestorOrdenDeInspeccion:
         self.ordenSeleccionada.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
 
     def buscarResponsablesReparacion(self):
-        conn = sqlite3.connect('DATABASE/database.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT nombre FROM Empleados")
+        empleadoTodos = obtenerEmpleadosTodos()
         self.mails_responsables = []
-        for row in cursor.fetchall():
-            empleado = Empleado(row[0])
-            if empleado.esResponsableReparacion():
-                self.mails_responsables.append(empleado.obtenerMail())
-        conn.close()
+        for e in empleadoTodos:
+            em = Empleado(nombre=e.nombre, apellido=e.apellido, mail=e.mail, telefono=e.telefono, idEmpleado=e.idEmpleado)
+            if em.esResponsableReparacion(e) is True:
+                self.mails_responsables.append(e.obtenerMail())
+        self.enviarMails()
+
 
     def enviarMails(self):
         # Simula envío

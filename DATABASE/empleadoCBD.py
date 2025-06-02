@@ -1,4 +1,6 @@
 import sqlite3
+from MODULES.empleado import Empleado
+
 def obtenerEmpleado(nombre):
         conn = sqlite3.connect('DATABASE/database.db')
         cursor = conn.cursor()
@@ -8,3 +10,12 @@ def obtenerEmpleado(nombre):
         conn.commit()
         conn.close()
         return empleado_nombre
+
+def obtenerEmpleadosTodos():
+    conn = sqlite3.connect('DATABASE/database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Empleados")
+    empleados_data = cursor.fetchall()
+    conn.close()
+    empleados = [Empleado(*data) for data in empleados_data]
+    return empleados

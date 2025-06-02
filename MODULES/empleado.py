@@ -1,7 +1,7 @@
 from MODULES.rol import Rol
 
 class Empleado:
-    def __init__(self, nombre=None, apellido=None, mail=None, telefono=None, idEmpleado=None, rol:Rol=None):
+    def __init__(self, nombre=None, apellido=None, mail=None, telefono=None, idEmpleado=None, rol:Rol= Rol("Responsable de Reparación")):
         self.nombre = nombre
         self.apellido = apellido
         self.mail = mail
@@ -20,7 +20,8 @@ class Empleado:
     
     def obtenerMail(self):
         return self.mail
-    def sosDeEmpleado(empleado_actual):
+    
+    def sosDeEmpleado(self, empleado_actual):
         if self.nombre == empleado_actual:
             return True
         else:
