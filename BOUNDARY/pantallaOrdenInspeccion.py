@@ -73,7 +73,7 @@ class PantallaOrdenInspeccion:
 
         tk.Label(frame, text="Motivos Fuera de Servicio:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(anchor="w", pady=(10, 0))
         self.motivos_listbox = tk.Listbox(frame, selectmode=tk.MULTIPLE, height=6, exportselection=False)
-        lista_motivos = self.gestor.buscarMotivoTiposFueraServicio()
+        lista_motivos = self.mostrarMotivosTipoFueraServicio()
         for motivo in lista_motivos:
             self.motivos_listbox.insert(tk.END, motivo)
         self.motivos_listbox.pack(fill="x", pady=5)
@@ -118,26 +118,28 @@ class PantallaOrdenInspeccion:
         return lista_visual
 
     def pedirSeleccionOrdenInspeccion(self):
-        return self.ordenes_combo.current() >= 0
-
-    def tomarOrdenInspeccionSeleccionada(self):
         idx = self.ordenes_combo.current()
         if idx < 0:
             messagebox.showerror("Error", "Debe seleccionar una orden.")
-            return
+            return False
+        return True
+
+    def tomarOrdenInspeccionSeleccionada(self):
+        if not self.pedirSeleccionOrdenInspeccion():
+            return None
+        idx = self.ordenes_combo.current()
         return self.ordenes_completas[idx]
 
     def pedirObservacionCierreOrden(self):
-        return self.observacion_entry.get()
-
-    def tomarObservacionCierreOrden(self):
-        observacion = self.observacion_entry.get()
+        observacion = self.tomarObservacionCierreOrden()
         self.gestor.tomarObservacionCierreOrden(observacion)
-        self.mostrarMotivosTipoFueraServicio()
         return observacion
 
+    def tomarObservacionCierreOrden(self):
+        return self.observacion_entry.get()
+        
     def mostrarMotivosTipoFueraServicio(self):
-        return [self.motivos_listbox.get(i) for i in range(self.motivos_listbox.size())]
+        return self.gestor.buscarMotivoTiposFueraServicio()
 
     def pedirSeleccionMotivoTipoFueraServicio(self):
         return len(self.motivos_listbox.curselection()) > 0
@@ -146,8 +148,8 @@ class PantallaOrdenInspeccion:
         return [self.motivos_listbox.get(i) for i in self.motivos_listbox.curselection()]
 
     def pedirComentario(self):
-        return self.comentario_entry.get()
-
+        return self.tomarComentario()
+    
     def tomarComentario(self):
         return self.comentario_entry.get()
 
@@ -158,7 +160,7 @@ class PantallaOrdenInspeccion:
         ordenSelec = self.tomarOrdenInspeccionSeleccionada()
         if ordenSelec is None:
             return
-        observacion = self.tomarObservacionCierreOrden()
+        observacion = self.pedirObservacionCierreOrden()
         motivos = self.tomarMotivoTipoFueraServicio()
 
 
