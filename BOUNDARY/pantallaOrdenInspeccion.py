@@ -178,10 +178,7 @@ class PantallaOrdenInspeccion:
         if not self.__gestor.tomarConfirmacionCierreOrden(ordenSelec, observacion, motivos):
             print("Validacion fallida, no se puede cerrar la orden.")
             return
-        
-        if not self.__gestor.pedirConfirmacionCierreOrden():
-            messagebox.showinfo("Cancelado", "El cierre de la orden ha sido cancelado.")
-            exit()  
+          
         self.__gestor.enviarMails()
         self.__gestor.finCU()
         messagebox.showinfo("Éxito", "La orden fue cerrada correctamente.")

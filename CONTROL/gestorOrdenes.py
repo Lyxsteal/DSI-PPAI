@@ -112,6 +112,9 @@ class GestorOrdenDeInspeccion:
         self.__motivosSeleccionados = self.validarExistenciaMotivoSeleccionado(motivos)
         if self.__motivosSeleccionados is None:
             return
+        if not self.pedirConfirmacionCierreOrden():
+            messagebox.showinfo("Cancelado", "El cierre de la orden ha sido cancelado.")
+            exit()
         self.buscarEstadoCerrada()
         return True
 
