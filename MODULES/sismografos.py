@@ -1,7 +1,10 @@
 from MODULES.cambioEstado import CambioEstado
-from DATABASE.cambioestadoCBD import getCambiosEstado, insertCambioEstado
+from DATABASE.cambioestadoCDB.cambioestadoGET import getCambiosEstado, insertCambioEstado
 from MODULES.estado import Estado
+from MODULES.motivoFueraServicio import MotivoFueraServicio
+from MODULES.motivosTipo import MotivoTipo
 import sqlite3
+
 class Sismografo:
     def __init__(self, codigoEstacion, identificadorSismografo=None, fechaAdquisicion=None, nroSerie=None, cambioEstado:CambioEstado= None):
         self.__codigoEstacion = codigoEstacion
@@ -17,11 +20,11 @@ class Sismografo:
         print('el sismografo:', self.__identificadorSismografo)
         cambiosEstado_objetos = getCambiosEstado(self.__identificadorSismografo)
         for cambio in cambiosEstado_objetos:
-            fechaHoraInicio, fechaHoraFin, idSismografo, idEstado = cambio
-            cambioEstado = CambioEstado(fechaHoraInicio, fechaHoraFin, idSismografo, idEstado)
-            if cambioEstado.esEstadoActual() == True:
-                print('id sismografo: ', cambioEstado.getIdSismografo)
-                cambioEstado.setFechaHoraFin(cambio)
+            self.__cambioEstado = cambio
+            print(cambio)
+            if self.__cambioEstado.esEstadoActual() is True:
+                print('id sismografo: ', self.__cambioEstado.getIdSismografo())
+                self.__cambioEstado.setFechaHoraFin(cambio)
                 break
         else:
             print('No se encontró cambio de estado actual para el sismografo: ', self.__identificadorSismografo)
@@ -29,6 +32,5 @@ class Sismografo:
         self.cambiarEstadoFueraServicio(idEstadoFdS, fechaActual, self.__identificadorSismografo, comentario, motivoTipo)
 
     def cambiarEstadoFueraServicio(self, idEstadoFdS, fechaActual, identificadorSismografo, comentario, motivoTipo):
-        insertCambioEstado(fechaActual, identificadorSismografo, idEstadoFdS)
-        self.__cambioEstado = CambioEstado(fechaHoraInicio= fechaActual, fechaHoraFin= None, idEstado= Estado(idEstado=idEstadoFdS), idSismografo= identificadorSismografo, comentario= comentario, motivoTipo = motivoTipo)
+        insertCambioEstado(fechaActual, identificadorSismografo, idEstadoFdS, comentario, motivoTipo)
         

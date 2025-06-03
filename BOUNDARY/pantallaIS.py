@@ -24,10 +24,8 @@ class Pantalla():
     # IMPORTANTE : Cambiar para que tome los datos de la ventana y no los temporales para testing 
     # Funcion para obtener los datos de la ventana cuando apretas el boton  
     def obtener_datos(self):
-        #nombre_usuario = self.insertar_usuario.get()
-        #contraseña_iniciada = self.insertar_contraseña.get()
-        nombre_usuario = 'lrodriguez'
-        contraseña_iniciada = 'luisito123'
+        nombre_usuario = self.insertar_usuario.get()
+        contraseña_iniciada = self.insertar_contraseña.get()
         self.gestor = GestorIS()
         sesion, mensaje = self.gestor.iniciarSesion(nombre_usuario, contraseña_iniciada)
         #print(mensaje)
@@ -101,49 +99,3 @@ class Pantalla():
 
     def seleccionOpcionIniciarSesion(self):
         self.habilitar_primera_pantalla()
-    
-"""         #Funcion que obtiene los usuarios de la base de datos (mover a usuario.py)
-    def obtenerUsuario(self):
-        db_path = os.path.join(os.path.dirname(__file__), '../MODULES/database.db')
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT nombre, contraseña
-            FROM Usuario
-        ''')
-        usuarios = cursor.fetchall()
-        conn.close()
-        return usuarios
-    
-    #Funcion que obtiene los datos de la bd, los verifica con los ingresados en la pantalla, crea una sesion en la tabla Sesion
-    def iniciarSesion(self, nombre_usuario, contraseña_iniciada):
-        sesion = None
-        usuarios = self.obtenerUsuario()
-        fechaActual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        for usuario in usuarios:
-            nombre = usuario[0]
-            contraseña = usuario[1]
-            if nombre == nombre_usuario and contraseña == contraseña_iniciada:
-                db_path = os.path.join(os.path.dirname(__file__), '../MODULES/database.db')
-                conn = sqlite3.connect(db_path)
-                cursor = conn.cursor()
-                cursor.execute('''
-                    INSERT INTO Sesion (fechaInicio, usuario)
-                    VALUES (?, ?)
-                ''', (fechaActual, nombre))
-                cursor.execute('''SELECT empleado FROM Usuario WHERE nombre = ?''', (nombre_usuario,))
-                empleado = cursor.fetchone()
-                empleado_nombre = empleado[0]
-                conn.commit()
-                cursor.execute('''
-                    SELECT * FROM Empleados WHERE nombre = ?
-                ''', (empleado_nombre,))
-                fila_empleado = cursor.fetchone()
-                if fila_empleado:
-                    empleado_selec = Empleado(fila_empleado[0], fila_empleado[1], fila_empleado[2], fila_empleado[3], fila_empleado[4])
-                conn.close()
-                usuario = Usuario(nombre, contraseña, empleado_selec)
-                self.sesion = Sesion(fechaInicio=fechaActual, usuario=usuario)
-                sesion = self.sesion
-                return sesion, 'Sesión iniciada con éxito.'
-        return None, 'Usuario o contraseña incorrectos.' """

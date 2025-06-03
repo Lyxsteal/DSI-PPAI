@@ -9,20 +9,20 @@ from MODULES.sesion import Sesion
 class PantallaOrdenInspeccion:
 
     def __init__(self, sesion:Sesion, gestor:GestorOrdenDeInspeccion = None):
-        self.gestor = gestor
-        self.sesion = sesion
-        self.ventanaIntermedia = None
-        self.ventanaOrdenes = None
-        self.ordenes_completas = []
-        self.ordenSeleccionada = None
+        self.__gestor = gestor
+        self.__sesion = sesion
+        self.__ventanaIntermedia = None
+        self.__ventanaOrdenes = None
+        self.__ordenes_completas = []
+        self.__ordenSeleccionada = None
 
     def seleccionOpcionCerrarOrdenInspeccion(self):
-        self.ventanaIntermedia = tk.Tk()
-        self.ventanaIntermedia.title("Opciones")
-        self.ventanaIntermedia.geometry("360x250")
-        self.ventanaIntermedia.configure(bg="#1e1e2f")
+        self.__ventanaIntermedia = tk.Tk()
+        self.__ventanaIntermedia.title("Opciones")
+        self.__ventanaIntermedia.geometry("360x250")
+        self.__ventanaIntermedia.configure(bg="#1e1e2f")
 
-        frame = tk.Frame(self.ventanaIntermedia, bg="#2a2a3b")
+        frame = tk.Frame(self.__ventanaIntermedia, bg="#2a2a3b")
         frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width=300, height=150)
 
         radio = tk.Button(
@@ -39,19 +39,19 @@ class PantallaOrdenInspeccion:
 
     def ayudaSeleccionOpcionCerrarOrdenInspeccion(self):
         print('Opción seleccionada: Cerrar Orden Inspeccion')
-        self.ventanaIntermedia.destroy()
+        self.__ventanaIntermedia.destroy()
         self.habilitarPantalla()
 
     def habilitarPantalla(self):
         print("Pantalla de Cierre de Orden de Inspección habilitada")
-        self.gestor = GestorOrdenDeInspeccion(sesionActual=self.sesion)
-        self.gestor.iniciarCierreOrdenInspeccion()
+        self.__gestor = GestorOrdenDeInspeccion(sesionActual=self.__sesion)
+        self.__gestor.iniciarCierreOrdenInspeccion()
 
-        self.ventanaOrdenes = tk.Tk()
-        self.ventanaOrdenes.title("Cierre de Orden")
-        self.ventanaOrdenes.geometry("600x600")
+        self.__ventanaOrdenes = tk.Tk()
+        self.__ventanaOrdenes.title("Cierre de Orden")
+        self.__ventanaOrdenes.geometry("600x600")
 
-        frame = tk.Frame(self.ventanaOrdenes, bg="#2a2a3b")
+        frame = tk.Frame(self.__ventanaOrdenes, bg="#2a2a3b")
         frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         titulo = tk.Label(frame, text="Cierre de Orden", bg="#2a2a3b", fg="white", font=("Segoe UI", 16, "bold"))
@@ -59,10 +59,10 @@ class PantallaOrdenInspeccion:
 
         tk.Label(frame, text="Seleccione una orden:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(anchor="w")
 
-        self.ordenes_completas = self.gestor.buscarOrdenes()
-        lista_visual = self.mostrarOrdCompletamenteRealizadas(self.ordenes_completas)
-        self.ordenSeleccionada = tk.StringVar()
-        self.ordenes_combo = ttk.Combobox(frame, values=lista_visual, textvariable=self.ordenSeleccionada, state="readonly")
+        self.__ordenes_completas = self.__gestor.buscarOrdenes()
+        lista_visual = self.mostrarOrdCompletamenteRealizadas(self.__ordenes_completas)
+        self.__ordenSeleccionada = tk.StringVar()
+        self.ordenes_combo = ttk.Combobox(frame, values=lista_visual, textvariable=self.__ordenSeleccionada, state="readonly")
         self.ordenes_combo.pack(fill="x", pady=5)
 
         tk.Label(frame, text="Observación de cierre:", bg="#2a2a3b", fg="#bbbbbb", anchor="w", font=("Segoe UI", 10)).pack(anchor="w", pady=(10, 0))
@@ -103,11 +103,11 @@ class PantallaOrdenInspeccion:
         ).pack(pady=10, ipadx=10, ipady=5)
 
         tk.Button(
-            frame, text="Cancelar", command=self.ventanaOrdenes.destroy,
+            frame, text="Cancelar", command=self.__ventanaOrdenes.destroy,
             bg="#d84b4b", fg="white", font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2"
         ).pack(pady=5, ipadx=10, ipady=5)
 
-        self.ventanaOrdenes.mainloop()
+        self.__ventanaOrdenes.mainloop()
 
     def mostrarOrdCompletamenteRealizadas(self, ordenes_ordenadas):
         lista_visual = []
@@ -128,24 +128,26 @@ class PantallaOrdenInspeccion:
         if not self.pedirSeleccionOrdenInspeccion():
             return None
         idx = self.ordenes_combo.current()
-        return self.ordenes_completas[idx]
+        return self.__ordenes_completas[idx]
 
     def pedirObservacionCierreOrden(self):
         observacion = self.tomarObservacionCierreOrden()
-        self.gestor.tomarObservacionCierreOrden(observacion)
+        self.__gestor.tomarObservacionCierreOrden(observacion)
         return observacion
 
     def tomarObservacionCierreOrden(self):
         return self.observacion_entry.get()
         
     def mostrarMotivosTipoFueraServicio(self):
-        return self.gestor.buscarMotivoTiposFueraServicio()
+        return self.__gestor.buscarMotivoTiposFueraServicio()
 
     def pedirSeleccionMotivoTipoFueraServicio(self):
         return len(self.motivos_listbox.curselection()) > 0
 
     def tomarMotivoTipoFueraServicio(self):
-        return [self.motivos_listbox.get(i) for i in self.motivos_listbox.curselection()]
+        motivos = [self.motivos_listbox.get(i) for i in self.motivos_listbox.curselection()]
+        self.__gestor.tomarMotivoTipoFueraServicio(motivos)
+        return motivos
 
     def pedirComentario(self):
         return self.tomarComentario()
@@ -153,39 +155,39 @@ class PantallaOrdenInspeccion:
     def tomarComentario(self):
         return self.comentario_entry.get()
 
-    def tomarConfirmacionCierreOrden(self):
-        return True
+    # def tomarConfirmacionCierreOrden(self):
+    #     return True 
 
     def tomarConfirmacionCierreOrden(self):
         ordenSelec = self.tomarOrdenInspeccionSeleccionada()
+
         if ordenSelec is None:
             return
         observacion = self.pedirObservacionCierreOrden()
         motivos = self.tomarMotivoTipoFueraServicio()
-
-
-        # Nuevo: obtener comentarios por motivo
         comentarios_por_motivo = {}
+
         for motivo in motivos:
             comentario = self.comentarios_motivos[motivo].get() if motivo in self.comentarios_motivos else ""
             if not comentario:
                 messagebox.showerror("Error", f"Debe ingresar un comentario para el motivo '{motivo}'.")
                 return
             comentarios_por_motivo[motivo] = comentario
-        self.gestor.tomarComentario(comentarios_por_motivo)
-        if not self.gestor.tomarConfirmacionCierreOrden(ordenSelec, observacion, motivos):
+        self.__gestor.tomarComentario(comentarios_por_motivo)
+
+        if not self.__gestor.tomarConfirmacionCierreOrden(ordenSelec, observacion, motivos):
             print("Validacion fallida, no se puede cerrar la orden.")
             return
-        if not self.gestor.pedirConfirmacionCierreOrden():
+        
+        if not self.__gestor.pedirConfirmacionCierreOrden():
             messagebox.showinfo("Cancelado", "El cierre de la orden ha sido cancelado.")
             exit()  
-        self.gestor.enviarMails()
-        self.gestor.finCU()
+        self.__gestor.enviarMails()
+        self.__gestor.finCU()
         messagebox.showinfo("Éxito", "La orden fue cerrada correctamente.")
-        self.ventanaOrdenes.destroy()
+        self.__ventanaOrdenes.destroy()
 
     def actualizar_comentarios_por_motivo(self, event=None):
-        # Borra los widgets anteriores
         for widget in self.comentarios_frame.winfo_children():
             widget.destroy()
         self.comentarios_motivos.clear()

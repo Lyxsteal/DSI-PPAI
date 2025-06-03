@@ -1,3 +1,5 @@
+from MODULES.motivoFueraServicio import MotivoFueraServicio
+from MODULES.motivosTipo import MotivoTipo
 import sqlite3
 def insertMotivoFS(fechaActual, comentario, motivo):
     try:
@@ -8,5 +10,6 @@ def insertMotivoFS(fechaActual, comentario, motivo):
                 INSERT INTO MotivosFueraServicio(fechaInicio, comentario, descripcion) VALUES(?,?,?)''',(fechaActual, comentario, motivo))
             conn.commit()
             conn.close()
+            MotivoFueraServicio(comentario, motivoTipo=MotivoTipo(motivo))
     except sqlite3.Error as e:
         print(f"[ERROR] Falló el INSERT en MotivosFueraServicio: {e}")
