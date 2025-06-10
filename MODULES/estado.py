@@ -18,7 +18,6 @@ class Estado:
     def getAmbito(self):
         return self.__ambito
     def sosAmbitoSismografo(self):
-        print(self.__ambito)
         if self.__ambito == "Sismografo":
             return True
         else:

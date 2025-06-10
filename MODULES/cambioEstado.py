@@ -24,7 +24,6 @@ class CambioEstado:
             return False
     def setFechaHoraFin(self, cambio):
         tiempoFin = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print('peeediilo', cambio.getIdSismografo(), cambio.getFechaHoraInicio())
         setFechaHoraFin(tiempoFin, cambio.getIdSismografo(), cambio.getFechaHoraInicio())
         
     def crearMotivoFueraServicio(self, fechaActual, motivoFS):

@@ -3,7 +3,7 @@ from tkinter import ttk
 from datetime import datetime
 import sqlite3
 import os
-
+from tkinter import messagebox
 from CONTROL.gestorIS import GestorIS
 from BOUNDARY.pantallaOrdenInspeccion import PantallaOrdenInspeccion
 from MODULES.Usuario import Usuario
@@ -20,6 +20,7 @@ class Pantalla():
         self.ventanaSesion = None
         self.pantallaOI = None
         self.gestor = None
+        self.counter = 0
 
     # IMPORTANTE : Cambiar para que tome los datos de la ventana y no los temporales para testing 
     # Funcion para obtener los datos de la ventana cuando apretas el boton  
@@ -35,7 +36,11 @@ class Pantalla():
             self.ventanaSesion.destroy()
             pantallaOPI.seleccionOpcionCerrarOrdenInspeccion() 
         else:
-            self.ventanaSesion.destroy()
+            self.counter += 1
+            print(self.counter)
+            if self.counter > 3:
+                messagebox.showerror("Error", 'Demasiado intentos fallidos, cerrando ventana...')
+                self.ventanaSesion.destroy()
 
 
     #Funcion GUI Pantalla inicio de sesion           
@@ -80,6 +85,7 @@ class Pantalla():
                                             bg="#3a3a4f", fg="#ffffff", insertbackground="white")
         self.insertar_contraseña.pack(padx=40, pady=(0, 30), ipady=5, fill="x")
 
+        self.counter = 0 
         # Botón estilo neón
         boton_ingresar = tk.Button(
             tarjeta,

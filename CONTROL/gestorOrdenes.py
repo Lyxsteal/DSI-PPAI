@@ -62,7 +62,6 @@ class GestorOrdenDeInspeccion:
                     ordenesFiltroDatos.append([nroOrden, fechaHoraFinalizacion, nombreEstacion, idSismografo])
                     ordenesFiltroObjetos.append(orden)
                     self.__diccOrdenesInspeccion[nroOrden] = self.__ordenInspeccion
-        print(self.__diccOrdenesInspeccion)
         self.ordenarPorFechaFinalizacion(ordenesFiltroDatos)
     
     def ordenarPorFechaFinalizacion(self, ordenes):
@@ -103,8 +102,8 @@ class GestorOrdenDeInspeccion:
         return messagebox.askyesno("Confirmar Cierre", "¿Está seguro de que desea cerrar esta orden de inspección?")
 
     def tomarConfirmacionCierreOrden(self, ordenSelec, observacion, motivos):
-        print(observacion)
-        print(motivos)
+        print('Observacion: ', observacion)
+        print('Motivos:', motivos)
         self.tomarOrdenInspeccionSeleccionada(ordenSelec)
         self.__observacionCierre = self.validarExistenciaObservacion(observacion)
         if self.__observacionCierre is None:
@@ -178,7 +177,6 @@ class GestorOrdenDeInspeccion:
         self.cerrarOrdenInspeccion(self.__fechaActual, self.__idFDS, self.__idCerrada, self.__observacionCierre, self.__ordenSeleccionada, self.__comentarios, self.__motivosSeleccionados)       
 
     def cerrarOrdenInspeccion(self, fechaActual, idEstadoFdS, idCerrada, observacionCierre, ordenSeleccionada, comentario, motivoTipo):
-        print(idCerrada, observacionCierre, ordenSeleccionada)
         self.__ordenSeleccionada.cerrar(self.__idCerrada, observacionCierre, ordenSeleccionada)
         self.ponerSismografoFueraEstado(idEstadoFdS, fechaActual, comentario, motivoTipo)
 

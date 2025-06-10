@@ -14,7 +14,6 @@ def getCambiosEstado(idSismografo):
         conn.close()
         if cambiosEstado is None:
             print(f"No se encontró cambio de estado para el sismografo seleccionado")
-        print(cambiosEstado)
         for cambio in cambiosEstado:
             fechaHoraInicio, fechaHoraFin, idSismografo, idEstado = cambio
             cambiosEstado_objetos.append(CambioEstado(fechaHoraInicio, fechaHoraFin, estado=Estado(idEstado=idEstado), idSismografo=idSismografo))

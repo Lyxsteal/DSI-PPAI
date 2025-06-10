@@ -2,6 +2,7 @@ import sqlite3
 from MODULES.sesion import Sesion
 from datetime import datetime
 from MODULES.Usuario import Usuario
+from tkinter import messagebox
 class GestorIS:
     def __init__(self, fechaHoraActual=None, mails=None, observacionCierre=None, ordenesInspeccion=None, sesionActual:Sesion=None):
         self.fechaHoraActual = None
@@ -39,5 +40,9 @@ class GestorIS:
                 ''', (fechaActual, nombre))
                 conn.close()
                 sesion = Sesion(fechaInicio=fechaActual, fechaFin=None, usuario=Usuario(nombre))
+        if sesion == None:
+            messagebox.showerror("Error", 'Usuario o contraseña incorrectos.')
+            return sesion, None
+        else:
+            if sesion != None:
                 return sesion, 'Sesión iniciada con éxito.'
-        return None, 'Usuario o contraseña incorrectos.'

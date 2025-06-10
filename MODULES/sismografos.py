@@ -17,13 +17,10 @@ class Sismografo:
         return self.__identificadorSismografo
     
     def fueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
-        print('el sismografo:', self.__identificadorSismografo)
         cambiosEstado_objetos = getCambiosEstado(self.__identificadorSismografo)
         for cambio in cambiosEstado_objetos:
             self.__cambioEstado = cambio
-            print(cambio)
             if self.__cambioEstado.esEstadoActual() is True:
-                print('id sismografo: ', self.__cambioEstado.getIdSismografo())
                 self.__cambioEstado.setFechaHoraFin(cambio)
                 break
         else:

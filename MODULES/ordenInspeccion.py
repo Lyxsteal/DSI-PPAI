@@ -66,7 +66,6 @@ class OrdenInspeccion:
         return tiempoActual
     
     def setEstadoCierre(self, idEstado, fechaCierre, observacionCierre, ordenSeleccionada):
-        print(idEstado, fechaCierre, observacionCierre)
         setEstadoCierre(fechaCierre,observacionCierre,idEstado, ordenSeleccionada.getNroOrden())
         print(f"Orden {ordenSeleccionada.getNroOrden()} cerrada correctamente.")
         
