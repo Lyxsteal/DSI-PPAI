@@ -34,6 +34,6 @@ class Estado:
             return False, None
     def sosFueraDeServicio(self):
         if self.__nombre == "Fuera de Servicio":
-            return True
+            return True, self.getIdEstado()
         else:
-            return False    
+            return False, None    

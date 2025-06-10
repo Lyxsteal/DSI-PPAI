@@ -20,11 +20,9 @@ from DATABASE.motivoTipoCBD import obtenerMotivoTipo
 from DATABASE.empleadoCBD import obtenerEmpleadosTodos
 
 class GestorOrdenDeInspeccion:
-    def __init__(self, sesionActual:Sesion, empleado:Optional[Empleado] = None, motivos = None, estado:Optional[Estado] = None, 
+    def __init__(self, sesionActual:Sesion, estado:Optional[Estado] = None, 
                  pantallaCCRS:Optional[PantallaCCRS] = None, interfaz:Optional[InterfazNotificacionEmail] = None , ordenes = None, fechaActual = None, ordenSeleccionada = None, observacion = None, orden:OrdenInspeccion=None):
         self.__sesion = sesionActual
-        self.__empleado = empleado
-        self.__motivos = motivos
         self.__estado = estado
         self.__pantallaCCRS = PantallaCCRS()
         self.__interfaz = InterfazNotificacionEmail()
@@ -34,7 +32,7 @@ class GestorOrdenDeInspeccion:
         self.__comentarios = None
         self.__observacionCierre = observacion
         self.__ambitoOI = None
-        self.__ambitoSismografo = None
+        self.__ambitoSis = None
         self.__existeCerrada = None
         self.__idCerrada = None
         self.__idFDS = None
@@ -145,8 +143,9 @@ class GestorOrdenDeInspeccion:
             exit()
         for estado in estados_objetos:
             self.__estado = estado
-            self.__existeCerrada, self.__idCerrada = self.__estado.sosCerrada()
+            self.__existeCerrada, idCerrada = self.__estado.sosCerrada()
             if self.__existeCerrada is True:
+                self.__idCerrada = idCerrada
                 self.getFechaHoraActual(estados_objetos)
                 break
         else:
@@ -160,28 +159,29 @@ class GestorOrdenDeInspeccion:
     def buscarFueraDeServicio(self, estados_objetos):
         for estado in estados_objetos:
             self.__estado = estado
-            self.ambitoSis = self.__estado.sosAmbitoSismografo()
-            if self.ambitoSis is True:
+            self.__ambitoSis = self.__estado.sosAmbitoSismografo()
+            if self.__ambitoSis is True:
                 break
-        if self.ambitoSis is False:
+        if self.__ambitoSis is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Sismografo'.")
             exit()
         for estado in estados_objetos:
             self.__estado = estado 
-            self.__idFDS = self.__estado.sosFueraDeServicio()
-            if self.__idFDS is True:
+            existsFDS, idFDS = self.__estado.sosFueraDeServicio()
+            if existsFDS is True:
+                self.__idFDS = idFDS
                 break
-        if self.__idFDS is False:
+        if existsFDS is False:
             messagebox.showerror("Error", "No se pudo encontrar el estado 'Fuera de Servicio'.")
             exit()
-        self.cerrarOrdenInspeccion(self.__fechaActual, self.__idFDS, self.__idCerrada, self.__observacionCierre, self.__ordenSeleccionada, self.__comentarios, self.__motivosSeleccionados)       
+        self.cerrarOrdenInspeccion()       
 
-    def cerrarOrdenInspeccion(self, fechaActual, idEstadoFdS, idCerrada, observacionCierre, ordenSeleccionada, comentario, motivoTipo):
-        self.__ordenSeleccionada.cerrar(self.__idCerrada, observacionCierre, ordenSeleccionada)
-        self.ponerSismografoFueraEstado(idEstadoFdS, fechaActual, comentario, motivoTipo)
+    def cerrarOrdenInspeccion(self):
+        self.__ordenSeleccionada.cerrar(self.__idCerrada, self.__observacionCierre)
+        self.ponerSismografoFueraEstado()
 
-    def ponerSismografoFueraEstado(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
-        self.__ordenSeleccionada.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
+    def ponerSismografoFueraEstado(self):
+        self.__ordenSeleccionada.ponerSismografoFueraServicio(self.__idFDS, self.__fechaActual, self.__comentarios, self.__motivosSeleccionados)
 
     def buscarResponsablesReparacion(self):
         empleadoTodos_objetos = obtenerEmpleadosTodos()

@@ -57,17 +57,17 @@ class OrdenInspeccion:
         if self.__empleado.obtenerNombre() == nombreEmpleado:
             return True
         
-    def cerrar(self, idEstado, observacionCierre, ordenSeleccionada):
+    def cerrar(self, idEstado, observacionCierre):
         tiempoActual = self.setFechaHoraCierre()
-        self.setEstadoCierre(idEstado, tiempoActual, observacionCierre, ordenSeleccionada)
+        self.setEstadoCierre(idEstado, tiempoActual, observacionCierre)
 
     def setFechaHoraCierre(self):
         tiempoActual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return tiempoActual
     
-    def setEstadoCierre(self, idEstado, fechaCierre, observacionCierre, ordenSeleccionada):
-        setEstadoCierre(fechaCierre,observacionCierre,idEstado, ordenSeleccionada.getNroOrden())
-        print(f"Orden {ordenSeleccionada.getNroOrden()} cerrada correctamente.")
+    def setEstadoCierre(self, idEstado, fechaCierre, observacionCierre):
+        setEstadoCierre(fechaCierre,observacionCierre,idEstado, self.getNroOrden())
+        print(f"Orden {self.getNroOrden()} cerrada correctamente.")
         
     def ponerSismografoFueraServicio(self, idEstadoFdS, fechaActual, comentario, motivoTipo):
         self.__estacionSismo.ponerSismografoFueraServicio(idEstadoFdS, fechaActual, comentario, motivoTipo)
