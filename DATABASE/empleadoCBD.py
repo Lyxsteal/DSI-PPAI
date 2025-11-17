@@ -20,5 +20,5 @@ def obtenerEmpleadosTodos():
     conn.close()
     for empleado in empleados:
         nombre, apellido, mail, telefono, idEmpleado, rol = empleado
-        empleadosTodos_objetos.append(Empleado(nombre, apellido, mail, telefono, idEmpleado, rol=Rol(descripcion=None,nombre=rol)))
+        empleadosTodos_objetos.append(Empleado(nombre, apellido, mail, telefono, idEmpleado, rol=Rol(descripcion=None, rol=rol)))
     return empleadosTodos_objetos

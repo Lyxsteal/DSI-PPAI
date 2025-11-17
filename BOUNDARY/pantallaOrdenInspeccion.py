@@ -3,11 +3,13 @@ from tkinter import ttk, messagebox
 
 from CONTROL.gestorOrdenes import GestorOrdenDeInspeccion
 from MODULES.sesion import Sesion
+from BOUNDARY.pantallaCCRS import PantallaCCRS
+from BOUNDARY.interfazNotificacionEmail import InterfazNotificacionEmail
 
 # ==== PALETA ====
-BG_WINDOW = "#0c1524"       # fondo general
-BG_CARD   = "#18263a"       # tarjeta central
-BG_FIELD  = "#22334b"       # campos grandes
+BG_WINDOW = "#0c1524"
+BG_CARD   = "#18263a"
+BG_FIELD  = "#22334b"
 FG_TEXT   = "#e6edf7"
 FG_MUTED  = "#a2b1c9"
 ACCENT    = "#ff8a3d"
@@ -24,6 +26,22 @@ class PantallaOrdenInspeccion:
         self.__ordenes_completas = []
         self.__ordenSeleccionada = None
         self.comentarios_motivos = {}
+        self.__pantallaCCRS = PantallaCCRS()
+        self.__interfazNotificacion = InterfazNotificacionEmail()
+        self.comentarios_frame = None
+        self.comentarios_canvas = None
+
+    # ------------------------
+    #      SCROLL HELPER
+    # ------------------------
+    def _bind_mousewheel(self, widget, target):
+        """Permite usar la rueda del mouse para scrollear el widget."""
+        def _on_mousewheel(event):
+            target.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        widget.bind("<Enter>", lambda e: widget.bind_all("<MouseWheel>", _on_mousewheel))
+        widget.bind("<Leave>", lambda e: widget.unbind_all("<MouseWheel>"))
+
 
     # =========================
     # Ventana de opción inicial
@@ -40,28 +58,17 @@ class PantallaOrdenInspeccion:
         card = tk.Frame(wrapper, bg=BG_CARD)
         card.pack(fill="both", expand=True)
 
-        tk.Label(
-            card,
-            text="Acciones disponibles",
-            bg=BG_CARD,
-            fg=FG_TEXT,
-            font=("Segoe UI", 14, "bold")
-        ).pack(pady=(18, 8))
+        tk.Label(card, text="Acciones disponibles", bg=BG_CARD, fg=FG_TEXT,
+                 font=("Segoe UI", 14, "bold")).pack(pady=(18, 8))
 
-        tk.Label(
-            card,
-            text="Elija qué desea hacer",
-            bg=BG_CARD,
-            fg=FG_MUTED,
-            font=("Segoe UI", 10)
-        ).pack()
+        tk.Label(card, text="Elija qué desea hacer", bg=BG_CARD, fg=FG_MUTED,
+                 font=("Segoe UI", 10)).pack()
 
         btn = tk.Button(
             card,
             text="Cerrar orden de inspección",
             command=self.ayudaSeleccionOpcionCerrarOrdenInspeccion,
-            bg=ACCENT,
-            fg="white",
+            bg=ACCENT, fg="white",
             activebackground=ACCENT_D,
             activeforeground="white",
             relief="flat",
@@ -79,7 +86,11 @@ class PantallaOrdenInspeccion:
     # =========================
     def habilitarPantalla(self):
         print("Pantalla de Cierre de Orden de Inspección habilitada")
-        self.__gestor = GestorOrdenDeInspeccion(sesionActual=self.__sesion)
+        self.__gestor = GestorOrdenDeInspeccion(
+            sesionActual=self.__sesion,
+            pantallaCCRS=self.__pantallaCCRS,
+            interfaz=self.__interfazNotificacion
+        )
         self.__gestor.iniciarCierreOrdenInspeccion()
 
         root = tk.Tk()
@@ -88,7 +99,7 @@ class PantallaOrdenInspeccion:
         root.geometry("720x600")
         root.configure(bg=BG_WINDOW)
 
-        # Estilos ttk (para que combobox/scrollbars combinen)
+        # Estilos ttk
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("TLabel", background=BG_CARD, foreground=FG_TEXT, font=("Segoe UI", 10))
@@ -100,33 +111,24 @@ class PantallaOrdenInspeccion:
         style.map("TCombobox",
                   fieldbackground=[("readonly", "white")])
 
-        # Wrapper + “card”
         wrapper = tk.Frame(root, bg=BG_WINDOW)
         wrapper.pack(fill="both", expand=True, padx=24, pady=24)
 
         card = tk.Frame(wrapper, bg=BG_CARD)
         card.pack(fill="both", expand=True, padx=4, pady=4)
-
-        # Usamos grid para armonía
         card.columnconfigure(0, weight=1)
         card.columnconfigure(1, weight=1)
 
-        # Título
-        lbl_title = tk.Label(
-            card,
-            text="Cierre de Orden",
-            bg=BG_CARD,
-            fg=FG_TEXT,
-            font=("Segoe UI", 18, "bold")
-        )
+        lbl_title = tk.Label(card, text="Cierre de Orden", bg=BG_CARD, fg=FG_TEXT,
+                             font=("Segoe UI", 18, "bold"))
         lbl_title.grid(row=0, column=0, columnspan=2, pady=(18, 10))
 
-        sep = ttk.Separator(card, orient="horizontal")
-        sep.grid(row=1, column=0, columnspan=2, sticky="ew", padx=18, pady=(0, 15))
+        ttk.Separator(card, orient="horizontal").grid(row=1, column=0, columnspan=2,
+                                                      sticky="ew", padx=18, pady=(0, 15))
 
         row = 2
 
-        # ================= Datos generales =================
+        # --------- Orden ---------
         ttk.Label(card, text="Seleccione una orden:", style="Muted.TLabel").grid(
             row=row, column=0, columnspan=2, sticky="w", padx=22, pady=(0, 4)
         )
@@ -141,30 +143,30 @@ class PantallaOrdenInspeccion:
             textvariable=self.__ordenSeleccionada,
             state="readonly",
         )
-        self.ordenes_combo.grid(row=row + 1, column=0, columnspan=2, sticky="ew", padx=22, pady=(0, 10))
+        self.ordenes_combo.grid(row=row + 1, column=0, columnspan=2,
+                                sticky="ew", padx=22, pady=(0, 10))
 
         row += 2
 
+        # --------- Observación ---------
         ttk.Label(card, text="Observación de cierre:", style="Muted.TLabel").grid(
             row=row, column=0, columnspan=2, sticky="w", padx=22, pady=(10, 4)
         )
 
         self.observacion_entry = tk.Entry(card, font=("Segoe UI", 10))
-        self.observacion_entry.grid(row=row + 1, column=0, columnspan=2, sticky="ew", padx=22, pady=(0, 10))
+        self.observacion_entry.grid(row=row + 1, column=0, columnspan=2,
+                                    sticky="ew", padx=22, pady=(0, 10))
 
         row += 2
 
-        # ================= Motivos =================
+        # --------- Motivos ---------
         ttk.Label(card, text="Motivos de Fuera de Servicio:", style="Muted.TLabel").grid(
             row=row, column=0, columnspan=2, sticky="w", padx=22, pady=(10, 4)
         )
 
         self.motivos_listbox = tk.Listbox(
-            card,
-            selectmode=tk.MULTIPLE,
-            height=6,
-            bg=BG_FIELD,
-            fg=FG_TEXT,
+            card, selectmode=tk.MULTIPLE, height=6,
+            bg=BG_FIELD, fg=FG_TEXT,
             relief="flat",
             highlightthickness=1,
             highlightbackground="#202f46",
@@ -174,12 +176,17 @@ class PantallaOrdenInspeccion:
         lista_motivos = self.mostrarMotivosTipoFueraServicio()
         for motivo in lista_motivos:
             self.motivos_listbox.insert(tk.END, motivo)
-        self.motivos_listbox.grid(row=row + 1, column=0, columnspan=2, sticky="nsew", padx=22, pady=(0, 8))
+
+        self.motivos_listbox.grid(row=row + 1, column=0, columnspan=2,
+                                  sticky="nsew", padx=22, pady=(0, 8))
         self.motivos_listbox.bind("<<ListboxSelect>>", self.actualizar_comentarios_por_motivo)
+
+        # 💡 Activar scroll con rueda para MOTIVOS:
+        self._bind_mousewheel(self.motivos_listbox, self.motivos_listbox)
 
         row += 2
 
-        # ================= Comentarios por motivo =================
+        # --------- Comentarios ---------
         ttk.Label(card, text="Comentarios por motivo:", style="Muted.TLabel").grid(
             row=row, column=0, columnspan=2, sticky="w", padx=22, pady=(8, 4)
         )
@@ -190,26 +197,30 @@ class PantallaOrdenInspeccion:
 
         card.rowconfigure(row + 1, weight=1)
 
-        canvas = tk.Canvas(comentarios_container, bg=BG_CARD, highlightthickness=0)
-        scrollbar = tk.Scrollbar(comentarios_container, orient="vertical", command=canvas.yview)
-        self.comentarios_frame = tk.Frame(canvas, bg=BG_CARD)
+        self.comentarios_canvas = tk.Canvas(comentarios_container, bg=BG_CARD, highlightthickness=0)
+        scrollbar = tk.Scrollbar(comentarios_container, orient="vertical",
+                                 command=self.comentarios_canvas.yview)
+        self.comentarios_frame = tk.Frame(self.comentarios_canvas, bg=BG_CARD)
 
         self.comentarios_frame.bind(
             "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+            lambda e: self.comentarios_canvas.configure(scrollregion=self.comentarios_canvas.bbox("all"))
         )
 
-        canvas.create_window((0, 0), window=self.comentarios_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        self.comentarios_canvas.create_window((0, 0), window=self.comentarios_frame, anchor="nw")
+        self.comentarios_canvas.configure(yscrollcommand=scrollbar.set)
 
-        canvas.pack(side="left", fill="both", expand=True)
+        self.comentarios_canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
         self.comentarios_motivos.clear()
 
+        # Activar scroll con rueda para COMENTARIOS:
+        self._bind_mousewheel(self.comentarios_canvas, self.comentarios_canvas)
+
         row += 2
 
-        # ================= Botones =================
+        # --------- Botones ---------
         buttons_frame = tk.Frame(card, bg=BG_CARD)
         buttons_frame.grid(row=row, column=0, columnspan=2, pady=(12, 18))
 
@@ -217,8 +228,7 @@ class PantallaOrdenInspeccion:
             buttons_frame,
             text="Confirmar cierre",
             command=self.tomarConfirmacionCierreOrden,
-            bg=ACCENT,
-            fg="white",
+            bg=ACCENT, fg="white",
             activebackground=ACCENT_D,
             activeforeground="white",
             relief="flat",
@@ -231,8 +241,7 @@ class PantallaOrdenInspeccion:
             buttons_frame,
             text="Cancelar",
             command=self.__ventanaOrdenes.destroy,
-            bg="#c24747",
-            fg="white",
+            bg="#c24747", fg="white",
             activebackground="#a33737",
             activeforeground="white",
             relief="flat",
@@ -293,7 +302,7 @@ class PantallaOrdenInspeccion:
             comentario = self.comentarios_motivos.get(motivo)
             comentario = comentario.get() if comentario else ""
             if not comentario:
-                messagebox.showerror("Error", f"Debe ingresar un comentario para el motivo '{motivo}'.")
+                messagebox.showerror("Error", f"Debe ingresar un comentario para '{motivo}'.")
                 return
             comentarios_por_motivo[motivo] = comentario
 
@@ -303,7 +312,6 @@ class PantallaOrdenInspeccion:
             print("Validación fallida, no se puede cerrar la orden.")
             return
 
-        self.__gestor.enviarMails()
         self.__gestor.finCU()
         messagebox.showinfo("Éxito", "La orden fue cerrada correctamente.")
         self.__ventanaOrdenes.destroy()
@@ -326,5 +334,7 @@ class PantallaOrdenInspeccion:
 
             entry = tk.Entry(self.comentarios_frame, font=("Segoe UI", 10))
             entry.pack(fill="x", pady=(0, 6))
+            if hasattr(self, "comentarios_canvas"):
+                self._bind_mousewheel(entry, self.comentarios_canvas)
 
             self.comentarios_motivos[motivo] = entry

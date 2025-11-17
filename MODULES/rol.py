@@ -4,7 +4,7 @@ class Rol:
         self.__nombre = rol
 
     def esResponsableReparacion(self):
-        if self.__nombre == "Responsable de Reparación":
-            return True
-        else:
+        if self.__nombre is None:
             return False
+        nombre_normalizado = self.__nombre.strip().lower()
+        return nombre_normalizado in ("responsable de reparación", "responsable de reparacion")

@@ -13,19 +13,21 @@ from BOUNDARY.interfazNotificacionEmail import InterfazNotificacionEmail
 from MODULES.estacionSismo import EstacionSismologica
 from MODULES.sismografos import Sismografo
 from MODULES.cambioEstado import CambioEstado
+from MODULES.ISujetoOrden import ISujetoOrden
 from tkinter import messagebox
 from DATABASE.estadoCBD import estadoConsulta
 from DATABASE.ordenesCBD import buscarOrdenesInspeccion
 from DATABASE.motivoTipoCBD import obtenerMotivoTipo
 from DATABASE.empleadoCBD import obtenerEmpleadosTodos
 
-class GestorOrdenDeInspeccion:
+class GestorOrdenDeInspeccion(ISujetoOrden):
     def __init__(self, sesionActual:Sesion, estado:Optional[Estado] = None, 
                  pantallaCCRS:Optional[PantallaCCRS] = None, interfaz:Optional[InterfazNotificacionEmail] = None , ordenes = None, fechaActual = None, ordenSeleccionada = None, observacion = None, orden:OrdenInspeccion=None):
         self.__sesion = sesionActual
         self.__estado = estado
-        self.__pantallaCCRS = PantallaCCRS()
-        self.__interfaz = InterfazNotificacionEmail()
+        self.__pantallaCCRS = pantallaCCRS or PantallaCCRS()
+        self.__interfaz = interfaz or InterfazNotificacionEmail()
+        self.__observadores = []
         self.__ordenesOrdenadas = None
         self.__fechaActual = fechaActual
         self.__ordenSeleccionada = ordenSeleccionada
@@ -36,6 +38,7 @@ class GestorOrdenDeInspeccion:
         self.__existeCerrada = None
         self.__idCerrada = None
         self.__idFDS = None
+        self.__estadoFDSNombre = None
         self.__motivosSeleccionados = None
         self.__diccOrdenesInspeccion = {}
         self.__ordenInspeccion = orden
@@ -165,39 +168,79 @@ class GestorOrdenDeInspeccion:
         if self.__ambitoSis is False:
             messagebox.showerror("Error", "No se pudo encontrar el ambito 'Sismografo'.")
             exit()
+        existsFDS = False
         for estado in estados_objetos:
             self.__estado = estado 
             existsFDS, idFDS = self.__estado.sosFueraDeServicio()
             if existsFDS is True:
                 self.__idFDS = idFDS
+                self.__estadoFDSNombre = self.__estado.getNombre()
                 break
         if existsFDS is False:
             messagebox.showerror("Error", "No se pudo encontrar el estado 'Fuera de Servicio'.")
             exit()
-        self.cerrarOrdenInspeccion()       
+        self.cerrarOrdenInspeccion()
+        self.notificar()
 
     def cerrarOrdenInspeccion(self):
+        self.suscribir([self.__interfaz, self.__pantallaCCRS])
         self.__ordenSeleccionada.cerrar(self.__idCerrada, self.__observacionCierre)
         self.ponerSismografoFueraEstado()
 
     def ponerSismografoFueraEstado(self):
         self.__ordenSeleccionada.ponerSismografoFueraServicio(self.__idFDS, self.__fechaActual, self.__comentarios, self.__motivosSeleccionados)
 
+    def notificar(self):
+        motivos = []
+        if self.__motivosSeleccionados:
+            for motivo in self.__motivosSeleccionados:
+                if hasattr(motivo, "getDescripcion"):
+                    motivos.append(motivo.getDescripcion())
+                else:
+                    motivos.append(str(motivo))
+        id_sismografo = self.__ordenSeleccionada.getIdentificadorSismografo()
+        nombre_estado = self.__estadoFDSNombre
+        fecha_registro = self.__fechaActual
+        comentarios = self.__comentarios
+        destinatarios = self.buscarResponsablesReparacion()
+        for observador in self.__observadores:
+            if hasattr(observador, "destinatarios"):
+                observador.destinatarios = destinatarios
+            observador.publicarNotificacion(
+                id_sismografo,
+                nombre_estado,
+                fecha_registro,
+                motivos,
+                comentarios
+            )
+
+    def suscribir(self, observadores):
+        if observadores is None:
+            return
+        if not isinstance(observadores, list):
+            observadores = [observadores]
+        for observador in observadores:
+            if observador and observador not in self.__observadores:
+                self.__observadores.append(observador)
+
+    def desuscribir(self, observadores):
+        if observadores is None:
+            return
+        if not isinstance(observadores, list):
+            observadores = [observadores]
+        self.__observadores = [obs for obs in self.__observadores if obs not in observadores]
+
+    def obtener_observadores(self):
+        return list(self.__observadores)
+
     def buscarResponsablesReparacion(self):
+        self.__mails_responsables = []
         empleadoTodos_objetos = obtenerEmpleadosTodos()
         for empleado in empleadoTodos_objetos:
             self._empleado = empleado
             if empleado.esResponsableReparacion() is True:
                 self.__mails_responsables.append(empleado.obtenerMail())
-        self.enviarMails()
-
-    def enviarMails(self):
-        # Simula envío
-        # Teniendo los mails en self.mails_responsables
-        for mail in self.__mails_responsables:
-            print("Enviando email de notificación...")
-        self.__interfaz.enviarNotificacion()
-        self.__pantallaCCRS.publicarNotificacion()
+        return self.__mails_responsables
 
     def finCU(self):
         print('Fin Caso de Uso')
