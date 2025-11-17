@@ -26,7 +26,7 @@ class GestorOrdenDeInspeccion:
         self.__estado = estado
         self.__pantallaCCRS = PantallaCCRS()
         self.__interfaz = InterfazNotificacionEmail()
-        self.__ordenesOrdenadas = ordenes
+        self.__ordenesOrdenadas = None
         self.__fechaActual = fechaActual
         self.__ordenSeleccionada = ordenSeleccionada
         self.__comentarios = None
@@ -203,4 +203,4 @@ class GestorOrdenDeInspeccion:
         print('Fin Caso de Uso')
 
     def buscarOrdenes(self):
-        return self.__ordenes
+        return self.__ordenesOrdenadas
