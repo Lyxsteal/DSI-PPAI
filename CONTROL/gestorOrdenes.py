@@ -26,7 +26,7 @@ class GestorOrdenDeInspeccion:
         self.__estado = estado
         self.__pantallaCCRS = PantallaCCRS()
         self.__interfaz = InterfazNotificacionEmail()
-        self.__ordenes = ordenes
+        self.__ordenesOrdenadas = ordenes
         self.__fechaActual = fechaActual
         self.__ordenSeleccionada = ordenSeleccionada
         self.__comentarios = None
@@ -64,8 +64,8 @@ class GestorOrdenDeInspeccion:
     
     def ordenarPorFechaFinalizacion(self, ordenes):
         ordenesOrdenadas = sorted(ordenes, key=lambda o: datetime.strptime(o[1], "%Y-%m-%d %H:%M:%S"))
-        self.__ordenes = ordenesOrdenadas
-        return self.__ordenes
+        self.__ordenesOrdenadas = ordenesOrdenadas
+        return self.__ordenesOrdenadas
     
     def tomarOrdenInspeccionSeleccionada(self, orden):
         self.__ordenSeleccionada = self.__diccOrdenesInspeccion[orden[0]]
