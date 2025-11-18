@@ -172,6 +172,7 @@ class PantallaOrdenInspeccion:
             highlightbackground="#202f46",
             selectbackground=ACCENT,
             selectforeground="white",
+            exportselection=False 
         )
         lista_motivos = self.mostrarMotivosTipoFueraServicio()
         for motivo in lista_motivos:
@@ -180,9 +181,6 @@ class PantallaOrdenInspeccion:
         self.motivos_listbox.grid(row=row + 1, column=0, columnspan=2,
                                   sticky="nsew", padx=22, pady=(0, 8))
         self.motivos_listbox.bind("<<ListboxSelect>>", self.actualizar_comentarios_por_motivo)
-
-        # 💡 Activar scroll con rueda para MOTIVOS:
-        self._bind_mousewheel(self.motivos_listbox, self.motivos_listbox)
 
         row += 2
 
@@ -335,6 +333,6 @@ class PantallaOrdenInspeccion:
             entry = tk.Entry(self.comentarios_frame, font=("Segoe UI", 10))
             entry.pack(fill="x", pady=(0, 6))
             if hasattr(self, "comentarios_canvas"):
-                self._bind_mousewheel(entry, self.comentarios_canvas)
+                self._bind_mousewheel(self.comentarios_canvas, self.comentarios_canvas)
 
             self.comentarios_motivos[motivo] = entry
